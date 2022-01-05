@@ -53,11 +53,11 @@ public class NetworkManagerPlayerSelect : NetworkManager
     public void LoadCombatScene()
     {
         GameObject oldObj1 = p1Connection.identity.gameObject;
-        NetworkServer.ReplacePlayerForConnection(p1Connection, P1LobbyDetails.gameObject);
+        NetworkServer.ReplacePlayerForConnection(p1Connection, P1LobbyDetails.gameObject, true);
         NetworkServer.Destroy(oldObj1);
 
         GameObject oldObj2 = p2Connection.identity.gameObject;
-        NetworkServer.ReplacePlayerForConnection(p2Connection, P2LobbyDetails.gameObject);
+        NetworkServer.ReplacePlayerForConnection(p2Connection, P2LobbyDetails.gameObject, true);
         NetworkServer.Destroy(oldObj2);
 
         //both players have selected, start game

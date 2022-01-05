@@ -5,11 +5,12 @@ using Mirror;
 
 public class PlayerControllerCombat : NetworkBehaviour
 {
-    private int playerNum;
+    [SerializeField] private int playerNum;
     private CombatManager combatManager;
     private PlayerLobbyDetails playerLobbyDetails;
     private PlayerLobbyDetails enemyLobbyDetails; 
 
+    [Client]
     // Start is called before the first frame update
     void Start()
     {
@@ -18,25 +19,25 @@ public class PlayerControllerCombat : NetworkBehaviour
         transform.SetParent(GameObject.Find("Canvas").transform);
         transform.localScale = new Vector3(1, 1, 1);
 
-        if (transform.localPosition.x < 0)
+        if (playerNum == 1)
         {
             playerNum = 1;
             playerLobbyDetails = GameObject.Find("P1LobbyDetails").GetComponent<PlayerLobbyDetails>();
             enemyLobbyDetails = GameObject.Find("P2LobbyDetails").GetComponent<PlayerLobbyDetails>();
         }
-        else
+        else if (playerNum == 2)
         {
-            playerNum = 2;
             playerLobbyDetails = GameObject.Find("P2LobbyDetails").GetComponent<PlayerLobbyDetails>();
             enemyLobbyDetails = GameObject.Find("P1LobbyDetails").GetComponent<PlayerLobbyDetails>();
         }
 
-        if (playerLobbyDetails.GetIsMe == false)
-            return;
-
-        SetHeroColors();
+        if (playerLobbyDetails.isLocalPlayer)
+        {
+            SetHeroColors();
+        }
     }
 
+    [Client]
     public void SetHeroColors()
     {
         if (playerNum == 1)
@@ -51,8 +52,10 @@ public class PlayerControllerCombat : NetworkBehaviour
                 hero.SetOwnership(false);
                 hero.SetHeroObj(enemyLobbyDetails.GetHeroObj);
             }
+
+            return;
         }
-        else if (playerNum == 2)
+        if (playerNum == 2)
         {
             foreach (CombatHero hero in combatManager.GetP1Heroes)
             {

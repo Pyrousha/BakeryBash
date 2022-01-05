@@ -494,8 +494,7 @@ PrefabInstance:
         type: 3}
       propertyPath: heroObj
       value: 
-      objectReference: {fileID: 11400000, guid: 451184ad32ac7d34e8dc8086c5758fa6,
-        type: 2}
+      objectReference: {fileID: 0}
     - target: {fileID: 5261713882226379684, guid: fa2d22d60309bb34193dff17f5e51b0f,
         type: 3}
       propertyPath: m_Pivot.x
@@ -1107,6 +1106,11 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 399789587090026406, guid: a03bee527f2192040b72da59c4d52dce,
+        type: 3}
+      propertyPath: playerNum
+      value: 2
+      objectReference: {fileID: 0}
     - target: {fileID: 399789587090026407, guid: a03bee527f2192040b72da59c4d52dce,
         type: 3}
       propertyPath: m_Name
@@ -1176,6 +1180,11 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 399789587090026406, guid: a03bee527f2192040b72da59c4d52dce,
+        type: 3}
+      propertyPath: playerNum
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 399789587090026407, guid: a03bee527f2192040b72da59c4d52dce,
         type: 3}
       propertyPath: m_Name
@@ -1229,8 +1238,7 @@ PrefabInstance:
         type: 3}
       propertyPath: heroObj
       value: 
-      objectReference: {fileID: 11400000, guid: 451184ad32ac7d34e8dc8086c5758fa6,
-        type: 2}
+      objectReference: {fileID: 0}
     - target: {fileID: 5261713882226379684, guid: fa2d22d60309bb34193dff17f5e51b0f,
         type: 3}
       propertyPath: m_Pivot.x
