@@ -6,19 +6,14 @@ using UnityEngine.UI;
 
 public class HeroName : MonoBehaviour
 {
-    public SelectionPlayer player;
+    [SerializeField] private PlayerControllerHeroSelect player;
+
     Text heroNameText;
 
     // Start is called before the first frame update
     void Start()
     {
         heroNameText = GetComponent<Text>();
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
     }
 
     public void SetText(string name)

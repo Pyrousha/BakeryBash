@@ -8,4 +8,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/CharSelect.unity
     guid: 9fc0d4010bbf28b4594072e72b8655ab
+  - enabled: 1
+    path: Assets/Scenes/TestBattleScene.unity
+    guid: a187b5b593c1ed2488fc945cc1f6f072
   m_configObjects: {}
