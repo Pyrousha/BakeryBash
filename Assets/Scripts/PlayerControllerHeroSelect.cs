@@ -122,6 +122,14 @@ public class PlayerControllerHeroSelect : NetworkBehaviour
     public void SendReadyToServer(int num, bool ready)
     {
         networkManager.SetReady(num, ready);
+        LoadReadyStatusFromServer(ready);
+    }
+
+    [ClientRpc]
+    public void LoadReadyStatusFromServer(bool newIsReady)
+    {
+        isReady = newIsReady;
+        SetReadyVisuals();
     }
 
     public void SetReadyVisuals()

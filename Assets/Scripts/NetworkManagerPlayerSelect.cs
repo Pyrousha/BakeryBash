@@ -10,8 +10,8 @@ public class NetworkManagerPlayerSelect : NetworkManager
     // spawning players. The built in RoundRobin spawn method wouldn't work after
     // someone reconnects (both players would be on the same side).
 
-    NetworkConnection p1;
-    NetworkConnection p2;
+    NetworkConnection p1Connection;
+    NetworkConnection p2Connection;
 
     [SerializeField] private Transform player1Pos;
     [SerializeField] private Transform player2Pos;
@@ -52,12 +52,12 @@ public class NetworkManagerPlayerSelect : NetworkManager
     [Server]
     public void LoadCombatScene()
     {
-        GameObject oldObj1 = p1.identity.gameObject;
-        NetworkServer.ReplacePlayerForConnection(p1, P1LobbyDetails.gameObject);
+        GameObject oldObj1 = p1Connection.identity.gameObject;
+        NetworkServer.ReplacePlayerForConnection(p1Connection, P1LobbyDetails.gameObject);
         NetworkServer.Destroy(oldObj1);
 
-        GameObject oldObj2 = p2.identity.gameObject;
-        NetworkServer.ReplacePlayerForConnection(p2, P2LobbyDetails.gameObject);
+        GameObject oldObj2 = p2Connection.identity.gameObject;
+        NetworkServer.ReplacePlayerForConnection(p2Connection, P2LobbyDetails.gameObject);
         NetworkServer.Destroy(oldObj2);
 
         //both players have selected, start game
@@ -101,9 +101,9 @@ public class NetworkManagerPlayerSelect : NetworkManager
     public override void OnServerAddPlayer(NetworkConnection conn)
     {
         if (numPlayers == 0)
-            p1 = conn;
+            p1Connection = conn;
         else
-            p2 = conn;
+            p2Connection = conn;
 
         // add player at correct spawn position
         Transform start = numPlayers == 0 ? player1Pos : player2Pos;
