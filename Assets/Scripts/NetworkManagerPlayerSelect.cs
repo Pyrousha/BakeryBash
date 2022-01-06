@@ -19,8 +19,11 @@ public class NetworkManagerPlayerSelect : NetworkManager
     [SerializeField] private PlayerLobbyDetails P1LobbyDetails;
     [SerializeField] private PlayerLobbyDetails P2LobbyDetails;
 
-    public HeroObject p1Hero;
-    public HeroObject p2Hero;
+    [SerializeField] private LobbyCountdown lobbyCountdown;
+    [SerializeField] private SlideTransition slideTransition;
+
+    //private HeroObject p1Hero;
+    //private HeroObject p2Hero;
 
     private bool p1Ready = false;
     private bool p2Ready = false;
@@ -48,6 +51,19 @@ public class NetworkManagerPlayerSelect : NetworkManager
             ServerChangeScene("TestBattleScene");
         }
     }*/
+
+    public override void OnServerAddPlayer(NetworkConnection conn)
+    {
+        if (numPlayers == 0)
+            p1Connection = conn;
+        else
+            p2Connection = conn;
+
+        // add player at correct spawn position
+        Transform start = numPlayers == 0 ? player1Pos : player2Pos;
+        GameObject player = Instantiate(playerPrefab, start.position, start.rotation);
+        NetworkServer.AddPlayerForConnection(conn, player);
+    }
 
     [Server]
     public void LoadCombatScene()
@@ -87,10 +103,22 @@ public class NetworkManagerPlayerSelect : NetworkManager
         }
         if (p1Ready && p2Ready)
         {
-            VerifyHeroSelections();
-            LoadCombatScene();
+            lobbyCountdown.StartCountdown();
         }
     }
+
+    public void CountdownDone()
+    {
+        slideTransition.StartSlideUp();
+    }
+
+    [Server]
+    public void SlideUpDone()
+    {
+        //VerifyHeroSelections();
+        LoadCombatScene();
+    }
+
 
     public void VerifyHeroSelections()
     {
@@ -98,16 +126,17 @@ public class NetworkManagerPlayerSelect : NetworkManager
         P2LobbyDetails.LoadDataFromServer();
     }
 
-    public override void OnServerAddPlayer(NetworkConnection conn)
+    public override void OnServerSceneChanged(string sceneName)
     {
-        if (numPlayers == 0)
-            p1Connection = conn;
-        else
-            p2Connection = conn;
+        slideTransition.StartSlideDown();
 
-        // add player at correct spawn position
-        Transform start = numPlayers == 0 ? player1Pos : player2Pos;
-        GameObject player = Instantiate(playerPrefab, start.position, start.rotation);
-        NetworkServer.AddPlayerForConnection(conn, player);
+        base.OnServerSceneChanged(sceneName);
+    }
+
+    public override void OnClientSceneChanged(NetworkConnection conn)
+    {
+        slideTransition.StartSlideDown();
+
+        base.OnClientSceneChanged(conn);
     }
 }
