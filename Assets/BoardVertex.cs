@@ -9,12 +9,25 @@ public class BoardVertex : MonoBehaviour
     public int VertexId => vertexId;
 
     private GameBoardManager boardManager;
+    private SpriteRenderer spriteRenderer;
 
     [SerializeField] private Text indexDisplay;
+
+    public CombatHero combatHero { get; private set; }
+
+    [SerializeField] private List<BoardVertex> adjacentVertices;
+    public List<BoardVertex> AdjacentVertices => adjacentVertices;
 
     private void Start()
     {
         boardManager = FindObjectOfType<GameBoardManager>();
+
+        if (adjacentVertices == null)
+        {
+            adjacentVertices = new List<BoardVertex>();
+        }
+
+        spriteRenderer = GetComponent<SpriteRenderer>();
     }
 
     public void SetVertexId(int newId)
@@ -22,4 +35,42 @@ public class BoardVertex : MonoBehaviour
         vertexId = newId;
         indexDisplay.text = vertexId.ToString();
     }
+
+    public void SetCombatHero(CombatHero newHero)
+    {
+        combatHero = newHero;
+    }
+
+    public void ResetAdjVertices()
+    {
+        adjacentVertices = new List<BoardVertex>();
+    }
+
+    public void TryAddAdjVertex(BoardVertex newVertex)
+    {
+        if(adjacentVertices.IndexOf(newVertex) > -1)
+        {
+            //already in list, skip
+        }
+        else
+        {
+            adjacentVertices.Add(newVertex);
+        }
+    }
+
+    public void SetAdjacentVertices(List<BoardVertex> newAdjVertices)
+    {
+        adjacentVertices = newAdjVertices;
+    }
+
+    public void Highlight()
+    {
+        spriteRenderer.color = Color.cyan;
+    }
+
+    public void ResetColor()
+    {
+        spriteRenderer.color = Color.white;
+    }
+        
 }

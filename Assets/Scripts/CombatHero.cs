@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using Mirror;
+using System;
 
 public class CombatHero : NetworkBehaviour
 {
@@ -12,15 +13,18 @@ public class CombatHero : NetworkBehaviour
     [SerializeField] private HeroObject heroObj;
 
     [Header("References")]
-    [SerializeField] private Image heroImage;
+    [SerializeField] private SpriteRenderer heroSpriteRend;
     [SerializeField] private Text nameText;
     private CombatManager combatManager;
+    private PlayerControllerCombat playerController;
 
     private Animator anim;
-    [SerializeField] private Image bgImage;
+    [SerializeField] private SpriteRenderer bgSpriteRend;
 
-    private Color teamColor;
-    private Color enemyColor;
+    [Header("Parametes and such")]
+    [SerializeField] private int startingVertexId = -1;
+    [SerializeField] private BoardVertex currVertex;
+    public BoardVertex CurrVertex => currVertex;
 
     private bool doneStart = false;
 
@@ -32,15 +36,25 @@ public class CombatHero : NetworkBehaviour
         combatManager = FindObjectOfType<CombatManager>();
 
         anim = GetComponent<Animator>();
-        //bgImage = GetComponent<Image>();
 
         if (heroObj != null)
             LoadHeroObj();
 
+        if (currVertex != null)
+            MoveToVertex(currVertex);
+        else
+        {
+            if (startingVertexId > -1)
+            {
+                BoardVertex vert = FindObjectOfType<GameBoardManager>().GetVertexWithId(startingVertexId);
+                MoveToVertex(vert);
+            }
+        }
+
         doneStart = true;
     }
 
-    public void SetOwnership(bool newIsMine)
+    public void SetOwnership(PlayerControllerCombat newPlayer, bool newIsMine)
     {
         if (doneStart == false)
             Start();
@@ -51,11 +65,14 @@ public class CombatHero : NetworkBehaviour
         Color colToUse;
 
         if (isMine == true)
+        {
             colToUse = combatManager.TeamColor;
+            playerController = newPlayer;
+        }
         else
             colToUse = combatManager.EnemyColor;
 
-        bgImage.color = colToUse;
+        bgSpriteRend.color = colToUse;
     }
 
     public void SetHeroObj(HeroObject newHeroObj)
@@ -66,15 +83,25 @@ public class CombatHero : NetworkBehaviour
 
     public void LoadHeroObj()
     {
-        heroImage.sprite = heroObj.HeroSprite;
+        heroSpriteRend.sprite = heroObj.HeroSprite;
         nameText.text = heroObj.name;
     }
 
-    public void OnClicked()
+    public void OnMouseDown()
     {
         if (isMine)
-            DoSpin();
+        {
+            Debug.Log("clicked on my hero");
+            playerController.OnHeroClicked(this);
+            //DoSpin();
+        }    
     }
+
+    public void HighlightPossibleMoves()
+    {
+
+    }
+        
 
     public void DoSpin()
     {
@@ -92,5 +119,11 @@ public class CombatHero : NetworkBehaviour
     public void SendSpinToClients()
     {
         anim.SetTrigger("SpinTrigger");
+    }
+
+    public void MoveToVertex(BoardVertex vertex)
+    {
+        currVertex = vertex;
+        transform.position = vertex.transform.position + new Vector3(0,0,-0.2f);
     }
 }

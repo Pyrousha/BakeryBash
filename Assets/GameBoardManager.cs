@@ -9,13 +9,14 @@ public class GameBoardManager : MonoBehaviour
     private int numVertices;
     private List<int> openIndices;
 
+    [System.Serializable]
     public enum GameBoardStateEnum
     {
         mapEditor,
         playing
     }
 
-    private GameBoardStateEnum gameBoardState;
+    [SerializeField] private GameBoardStateEnum gameBoardState;
     public GameBoardStateEnum GetGameBoardStateEnum => gameBoardState;
 
     private List<BoardVertex> boardVertices; 
@@ -25,6 +26,7 @@ public class GameBoardManager : MonoBehaviour
     [SerializeField] private string mapName;
 
     [Header("References")]
+    [SerializeField] private CombatManager combatManager;
     [SerializeField] private Transform boardParent;
     [SerializeField] private Transform vertexParent;
     [SerializeField] private Transform edgeParent;
@@ -35,9 +37,13 @@ public class GameBoardManager : MonoBehaviour
     [Header("Board To Load")]
     [SerializeField] private GameObject boardToLoadPrefab;
 
+    private bool doneStart = false;
     // Start is called before the first frame update
     void Start()
     {
+        if (doneStart)
+            return;
+
         openIndices = new List<int>();
 
         //create new empty board
@@ -95,12 +101,28 @@ public class GameBoardManager : MonoBehaviour
                 }
             }
 
-            numVertices = boardVertices.Count;
-            Debug.Log("numverticies: " + numVertices);
+            CalculateAdjacentVertices();
 
             Debug.Log("table after load:" + PrintEdgeConnectionsTable());
         }
+
+        doneStart = true;
     }
+
+    public BoardVertex GetVertexWithId(int id)
+    {
+        if (!doneStart)
+            Start();
+
+        foreach(BoardVertex vert in boardVertices)
+        {
+            if (vert.VertexId == id)
+                return vert;
+        }
+
+        return null;
+    }
+        
 
     private void Update()
     {
@@ -125,6 +147,8 @@ public class GameBoardManager : MonoBehaviour
 
     private void SaveMapToPrefab()
     {
+        CalculateAdjacentVertices();
+
         string localPath = "Assets/Prefabs/MapPrefabs/" + mapName + ".prefab";
 
         #if UNITY_EDITOR
@@ -146,8 +170,11 @@ public class GameBoardManager : MonoBehaviour
 
     private void OnMouseDown()
     {
-        //Add new vertex when map is clicked on
-        AddNewVertex();
+        if (gameBoardState == GameBoardStateEnum.mapEditor)
+        {
+            //Add new vertex when map is clicked on
+            AddNewVertex();
+        }
     }
 
     public void AddNewVertex()
@@ -191,6 +218,8 @@ public class GameBoardManager : MonoBehaviour
             edgeConnectionsTable.Add(new List<bool>(new bool[numVertices]));
         }
 
+        CalculateAdjacentVertices();
+
         Debug.Log("table after adding vertex:" + PrintEdgeConnectionsTable());
     }
 
@@ -224,6 +253,8 @@ public class GameBoardManager : MonoBehaviour
 
             //Debug.Log("table after adding edge:"+ PrintEdgeConnectionsTable());
 
+            CalculateAdjacentVertices();
+
             return;
         }
         if (vertex1.VertexId > vertex2.VertexId)
@@ -245,6 +276,8 @@ public class GameBoardManager : MonoBehaviour
 
             //Debug.Log("table after adding edge:" + PrintEdgeConnectionsTable());
 
+            CalculateAdjacentVertices();
+
             return;
         }
 
@@ -255,11 +288,20 @@ public class GameBoardManager : MonoBehaviour
 
     public void VertexClicked()
     {
-        RaycastHit2D hit =  Physics2D.Raycast(Camera.main.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
+        RaycastHit2D hit = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
 
         BoardVertex newVertex = hit.transform.gameObject.GetComponent<BoardVertex>();
-        if (newVertex != null)
-            firstVertexClicked = newVertex;
+
+        if (gameBoardState == GameBoardStateEnum.mapEditor)
+        {
+            if (newVertex != null)
+                firstVertexClicked = newVertex;
+        }
+        else
+        {
+            if (newVertex != null)
+                combatManager.GetCurrPlayerController().OnVertexClicked(newVertex);
+        }
     }
 
     public void VertexReleased()
@@ -339,6 +381,8 @@ public class GameBoardManager : MonoBehaviour
             }
         }
 
+        CalculateAdjacentVertices();
+
         Debug.Log("table after remove: "+ PrintEdgeConnectionsTable());
     }
 
@@ -354,5 +398,31 @@ public class GameBoardManager : MonoBehaviour
             strToPrint += "\n";
         }
         return strToPrint;
+    }
+
+    public void CalculateAdjacentVertices()
+    {
+        for(int i =0; i<boardVertices.Count;i++)
+        {
+            BoardVertex vertex = boardVertices[i];
+
+            if (vertex != null)
+                vertex.ResetAdjVertices();
+        }
+
+        for (int i = 0; i < edgeConnectionsTable.Count; i++)
+        {
+            for (int j = 0; j < edgeConnectionsTable.Count; j++)
+            {
+                if(edgeConnectionsTable[i][j])
+                {
+                    BoardVertex v1 = boardVertices[i];
+                    BoardVertex v2 = boardVertices[j];
+
+                    v1.TryAddAdjVertex(v2);
+                    v2.TryAddAdjVertex(v1);
+                }
+            }
+        }
     }
 }

@@ -77,7 +77,7 @@ public class NetworkManagerPlayerSelect : NetworkManager
         NetworkServer.Destroy(oldObj2);
 
         //both players have selected, start game
-        ServerChangeScene("TestBattleScene");
+        ServerChangeScene("MapCreationScreen");
     }
 
     [Server]
