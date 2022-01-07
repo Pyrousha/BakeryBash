@@ -36,6 +36,7 @@ public class PlayerControllerCombat : NetworkBehaviour
         if (playerLobbyDetails.isLocalPlayer)
         {
             SetHeroColors();
+            combatManager.SetLocalPlayerNum(playerNum);
         }
     }
 
@@ -75,6 +76,8 @@ public class PlayerControllerCombat : NetworkBehaviour
     [Client]
     public void OnHeroClicked(CombatHero hero)
     {
+        //Note: this is only called on the player's combatController
+
         if (combatManager.PlayerTurn != playerNum)
         {
             Debug.Log("not my turn, exiting");

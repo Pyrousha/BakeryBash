@@ -2,22 +2,33 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using Mirror;
 
 public class CombatManager : NetworkBehaviour
 {
     [SerializeField] private int playerTurn = 1;
     public int PlayerTurn => playerTurn;
+    private int localPlayerNum;
+    public void SetLocalPlayerNum(int newNum)
+    {
+        localPlayerNum = newNum;
 
+        UpdateTurnIndicator();
+    }
+
+    [Header("References")]
     [SerializeField] private PlayerControllerCombat p1Controller;
     [SerializeField] private PlayerControllerCombat p2Controller;
 
-    [Header("References")]
     [SerializeField] private List<CombatHero> p1Heroes;
     [SerializeField] private List<CombatHero> p2Heroes;
 
     public List<CombatHero> GetP1Heroes => p1Heroes;
     public List<CombatHero> GetP2Heroes => p2Heroes;
+
+    [SerializeField] private Image turnColorImg;
+    [SerializeField] private Text turnText;
 
     [Header("Colors")]
     [SerializeField] private Color teamColor;
@@ -37,6 +48,8 @@ public class CombatManager : NetworkBehaviour
     public void SetPlayerTurnOnClient(int playerTurnNum)
     {
         playerTurn = playerTurnNum;
+
+        UpdateTurnIndicator();
     }
 
     public PlayerControllerCombat GetCurrPlayerController()
@@ -75,5 +88,20 @@ public class CombatManager : NetworkBehaviour
             return p2Heroes[index];
         }
     }
-        
+
+    public void UpdateTurnIndicator()
+    {
+        bool isMyTurn = (localPlayerNum == playerTurn);
+
+        if (isMyTurn)
+        {
+            turnColorImg.color = teamColor;
+            turnText.text = "Your move!";
+        }
+        else
+        {
+            turnColorImg.color = enemyColor;
+            turnText.text = "Enemy's turn";
+        }
+    }
 }
