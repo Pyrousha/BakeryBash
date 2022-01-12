@@ -12,7 +12,8 @@ public class PlayerControllerCombat : NetworkBehaviour
     private PlayerLobbyDetails enemyLobbyDetails;
 
     private CombatHero selectedHero;
-    private List<BoardVertex> validVertices;
+    private List<BoardVertex> validMoveVertices;
+    private List<BoardVertex> validAttackVertices;
 
     [Client]
     // Start is called before the first frame update
@@ -94,10 +95,25 @@ public class PlayerControllerCombat : NetworkBehaviour
 
             foreach (BoardVertex vertex in adjVertices)
             {
-                vertex.Highlight();
+                vertex.HighlightMove();
             }
 
-            validVertices = adjVertices;
+            validMoveVertices = adjVertices;
+
+            //Calculate valid attack vertices
+            validAttackVertices = new List<BoardVertex>();
+
+            List<BoardVertex> tempValidAttackVertices = GraphHelper.BFS(newClickedHero.CurrVertex, newClickedHero.BasicAttackRange);
+            foreach(BoardVertex vert in tempValidAttackVertices)
+            {
+                if (vert.combatHero != null)
+                    validAttackVertices.Add(vert);
+            }
+
+            foreach(BoardVertex vert in validAttackVertices)
+            {
+                vert.SetReticleActive(true);
+            }
         }
         else
         {
@@ -108,14 +124,13 @@ public class PlayerControllerCombat : NetworkBehaviour
 
             CombatHero enemyHero = newClickedHero;
 
-            List<BoardVertex> adjVertices = selectedHero.CurrVertex.AdjacentVertices;
             BoardVertex enemyHeroVertex = enemyHero.CurrVertex;
 
-            if(adjVertices.IndexOf(enemyHeroVertex) > -1)
+            if(validAttackVertices.IndexOf(enemyHeroVertex) > -1)
             {
-                //Enemy hero is in an adjacent space, so attack is valid
+                //Enemy hero is in range, so attack is valid
 
-                enemyHero.TakeDamage(selectedHero.BasicAttackDamage);
+                enemyHero.TakeDamageServer(selectedHero.BasicAttackDamage);
 
                 EndMyTurn();
             }
@@ -128,12 +143,12 @@ public class PlayerControllerCombat : NetworkBehaviour
         if (combatManager.PlayerTurn != playerNum)
         {
             selectedHero = null;
-            validVertices = null;
+            validMoveVertices = null;
 
             return;
         }
 
-        if (validVertices.IndexOf(vertex) > -1)
+        if (validMoveVertices.IndexOf(vertex) > -1)
         {
             int heroIndex = combatManager.GetIndexOfHero(playerNum, selectedHero);
             ServerMoveHero(playerNum, heroIndex, vertex.VertexId);
@@ -145,13 +160,19 @@ public class PlayerControllerCombat : NetworkBehaviour
     [Client]
     public void EndMyTurn()
     {
-        foreach (BoardVertex vert in validVertices)
+        foreach (BoardVertex vert in validMoveVertices)
         {
             vert.ResetColor();
         }
 
+        foreach (BoardVertex vert in validAttackVertices)
+        {
+            vert.SetReticleActive(false);
+        }
+
         selectedHero = null;
-        validVertices = null;
+        validMoveVertices = null;
+        validAttackVertices = null;
 
         combatManager.DoneTurn();
     }

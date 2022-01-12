@@ -11,7 +11,9 @@ public class CombatHero : NetworkBehaviour
 
     [Header("HeroObject")]
     [SerializeField] private HeroObject heroObj;
-    //private int basicAttackRange;
+    private int basicAttackRange;
+    public int BasicAttackRange => basicAttackRange;
+
     private int basicAttackDamage;
     public int BasicAttackDamage => basicAttackDamage;
 
@@ -98,7 +100,7 @@ public class CombatHero : NetworkBehaviour
         heroSpriteRend.sprite = heroObj.HeroSprite;
         nameText.text = heroObj.name;
 
-        //basicAttackRange = heroObj.BasicAttackRange;
+        basicAttackRange = heroObj.BasicAttackRange;
         basicAttackDamage = heroObj.BasicAttackDamage;
         maxHp = heroObj.MaxHp;
         hp = maxHp;
@@ -116,12 +118,16 @@ public class CombatHero : NetworkBehaviour
        
     public void MoveToVertex(BoardVertex vertex)
     {
+        if (currVertex != null)
+            currVertex.SetCombatHero(null);
+
         currVertex = vertex;
         transform.position = vertex.transform.position + new Vector3(0,0,-0.2f);
+        vertex.SetCombatHero(this);
     }
 
     [Command(requiresAuthority =false)]
-    public void TakeDamage(int dmg)
+    public void TakeDamageServer(int dmg)
     {
         if(dmg <= 0)
         {

@@ -8,9 +8,10 @@ public class BoardVertex : MonoBehaviour
     [SerializeField] private int vertexId;
     public int VertexId => vertexId;
 
-    private GameBoardManager boardManager;
+    //private GameBoardManager boardManager;
     private SpriteRenderer spriteRenderer;
 
+    [SerializeField] private GameObject reticleObj;
     [SerializeField] private Text indexDisplay;
 
     public CombatHero combatHero { get; private set; }
@@ -20,7 +21,7 @@ public class BoardVertex : MonoBehaviour
 
     private void Start()
     {
-        boardManager = FindObjectOfType<GameBoardManager>();
+        //boardManager = FindObjectOfType<GameBoardManager>();
 
         if (adjacentVertices == null)
         {
@@ -28,6 +29,8 @@ public class BoardVertex : MonoBehaviour
         }
 
         spriteRenderer = GetComponent<SpriteRenderer>();
+
+        reticleObj.SetActive(false);
     }
 
     public void SetVertexId(int newId)
@@ -63,7 +66,7 @@ public class BoardVertex : MonoBehaviour
         adjacentVertices = newAdjVertices;
     }
 
-    public void Highlight()
+    public void HighlightMove()
     {
         spriteRenderer.color = Color.cyan;
     }
@@ -72,5 +75,9 @@ public class BoardVertex : MonoBehaviour
     {
         spriteRenderer.color = Color.white;
     }
-        
+
+    public void SetReticleActive(bool newActive)
+    {
+        reticleObj.SetActive(newActive);
+    }
 }
