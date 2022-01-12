@@ -74,7 +74,7 @@ public class PlayerControllerCombat : NetworkBehaviour
     }
 
     [Client]
-    public void OnHeroClicked(CombatHero hero)
+    public void OnHeroClicked(CombatHero newClickedHero, bool isMine)
     {
         //Note: this is only called on the player's combatController
 
@@ -84,16 +84,42 @@ public class PlayerControllerCombat : NetworkBehaviour
             return;
         }
 
-        selectedHero = hero;
-
-        List<BoardVertex> adjVertices = hero.CurrVertex.AdjacentVertices;
-
-        foreach (BoardVertex vertex in adjVertices)
+        if (isMine)
         {
-            vertex.Highlight();
-        }
+            //Clicked on one of their own heroes, highlight adjacent vertices
 
-        validVertices = adjVertices;
+            selectedHero = newClickedHero;
+
+            List<BoardVertex> adjVertices = newClickedHero.CurrVertex.AdjacentVertices;
+
+            foreach (BoardVertex vertex in adjVertices)
+            {
+                vertex.Highlight();
+            }
+
+            validVertices = adjVertices;
+        }
+        else
+        {
+            //Clicked on an enemy hero, try to see if attacking is possible
+
+            if (selectedHero == null)
+                return;
+
+            CombatHero enemyHero = newClickedHero;
+
+            List<BoardVertex> adjVertices = selectedHero.CurrVertex.AdjacentVertices;
+            BoardVertex enemyHeroVertex = enemyHero.CurrVertex;
+
+            if(adjVertices.IndexOf(enemyHeroVertex) > -1)
+            {
+                //Enemy hero is in an adjacent space, so attack is valid
+
+                enemyHero.TakeDamage(selectedHero.BasicAttackDamage);
+
+                EndMyTurn();
+            }
+        }
     }
 
     [Client]
@@ -112,16 +138,22 @@ public class PlayerControllerCombat : NetworkBehaviour
             int heroIndex = combatManager.GetIndexOfHero(playerNum, selectedHero);
             ServerMoveHero(playerNum, heroIndex, vertex.VertexId);
 
-            foreach (BoardVertex vert in validVertices)
-            {
-                vert.ResetColor();
-            }
-
-            selectedHero = null;
-            validVertices = null;
-
-            combatManager.DoneTurn();
+            EndMyTurn();
         }
+    }
+
+    [Client]
+    public void EndMyTurn()
+    {
+        foreach (BoardVertex vert in validVertices)
+        {
+            vert.ResetColor();
+        }
+
+        selectedHero = null;
+        validVertices = null;
+
+        combatManager.DoneTurn();
     }
 
     [Command(requiresAuthority = false)]

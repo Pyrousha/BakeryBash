@@ -11,20 +11,31 @@ public class CombatHero : NetworkBehaviour
 
     [Header("HeroObject")]
     [SerializeField] private HeroObject heroObj;
+    //private int basicAttackRange;
+    private int basicAttackDamage;
+    public int BasicAttackDamage => basicAttackDamage;
+
+    private int maxHp;
+    private int hp;
+    public int Hp => hp;
 
     [Header("References")]
     [SerializeField] private SpriteRenderer heroSpriteRend;
     [SerializeField] private Text nameText;
+    [SerializeField] private Slider hpSlider;
+    [SerializeField] private Text hpText;
+
     private CombatManager combatManager;
     private PlayerControllerCombat playerController;
+    private PlayerControllerCombat enemyPlayerController;
 
-    private Animator anim;
     [SerializeField] private SpriteRenderer bgSpriteRend;
 
     [Header("Parametes and such")]
     [SerializeField] private int startingVertexId = -1;
-    [SerializeField] private BoardVertex currVertex;
+    private BoardVertex currVertex;
     public BoardVertex CurrVertex => currVertex;
+
 
     private bool doneStart = false;
 
@@ -34,8 +45,6 @@ public class CombatHero : NetworkBehaviour
             return;
 
         combatManager = FindObjectOfType<CombatManager>();
-
-        anim = GetComponent<Animator>();
 
         if (heroObj != null)
             LoadHeroObj();
@@ -70,7 +79,10 @@ public class CombatHero : NetworkBehaviour
             playerController = newPlayer;
         }
         else
+        {
             colToUse = combatManager.EnemyColor;
+            enemyPlayerController = newPlayer;
+        }
 
         bgSpriteRend.color = colToUse;
     }
@@ -85,45 +97,70 @@ public class CombatHero : NetworkBehaviour
     {
         heroSpriteRend.sprite = heroObj.HeroSprite;
         nameText.text = heroObj.name;
+
+        //basicAttackRange = heroObj.BasicAttackRange;
+        basicAttackDamage = heroObj.BasicAttackDamage;
+        maxHp = heroObj.MaxHp;
+        hp = maxHp;
+
+        UpdateHPBar();
     }
 
     public void OnMouseDown()
     {
         if (isMine)
-        {
-            Debug.Log("clicked on my hero");
-            playerController.OnHeroClicked(this);
-            //DoSpin();
-        }    
+            playerController.OnHeroClicked(this, true);
+        else
+            enemyPlayerController.OnHeroClicked(this, false);
     }
-
-    public void HighlightPossibleMoves()
-    {
-
-    }
-        
-
-    public void DoSpin()
-    {
-        SendSpinToServer();
-    }
-
-    [Command(requiresAuthority = false)]
-    public void SendSpinToServer()
-    {
-        SendSpinToClients();
-    }
-
-    //called by server to load other player's selection
-    [ClientRpc]
-    public void SendSpinToClients()
-    {
-        anim.SetTrigger("SpinTrigger");
-    }
-
+       
     public void MoveToVertex(BoardVertex vertex)
     {
         currVertex = vertex;
         transform.position = vertex.transform.position + new Vector3(0,0,-0.2f);
+    }
+
+    [Command(requiresAuthority =false)]
+    public void TakeDamage(int dmg)
+    {
+        if(dmg <= 0)
+        {
+            Debug.LogError("Attempting to deal " + dmg.ToString() + " damage to hero: " + heroObj.name);
+            return;
+        }
+
+        hp = Mathf.Max(0, hp - dmg);
+
+        UpdateHPClient(hp);
+
+        if (hp <= 0)
+            HeroKilledServer();
+    }
+
+    [ClientRpc]
+    public void UpdateHPClient(int newHp)
+    {
+        hp = newHp;
+
+        UpdateHPBar();
+
+        if (hp <= 0)
+            HeroKilledClient();
+    }
+
+    private void UpdateHPBar()
+    {
+        hpSlider.value = ((float)hp) / ((float)maxHp);
+        hpText.text = hp.ToString() + "/" + maxHp.ToString();
+    }
+
+    public void HeroKilledServer()
+    {
+
+    }
+
+    public void HeroKilledClient()
+    {
+
     }
 }

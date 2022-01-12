@@ -15,3 +15,5 @@ MonoBehaviour:
   id: 1
   heroSprite: {fileID: -6522643761500753899, guid: 8afa3a7e905ad4444b942e06c9bce481,
     type: 3}
+  basicAttackDamage: 2
+  maxHp: 5

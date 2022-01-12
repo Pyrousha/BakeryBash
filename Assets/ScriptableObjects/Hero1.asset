@@ -12,5 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1ffc77c08cb0d994e956d591e1539e70, type: 3}
   m_Name: Hero1
   m_EditorClassIdentifier: 
+  id: 0
   heroSprite: {fileID: 6589296478606195408, guid: 8afa3a7e905ad4444b942e06c9bce481,
     type: 3}
+  basicAttackDamage: 3
+  maxHp: 4
