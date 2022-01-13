@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class GameBoardManager : MonoBehaviour
 {
@@ -27,6 +28,11 @@ public class GameBoardManager : MonoBehaviour
 
     [Header("References")]
     [SerializeField] private CombatManager combatManager;
+    
+    private bool vertexMode = true;
+    private Transform vertexToMove;
+    [SerializeField] private Text vertexModeText;
+
     [SerializeField] private Transform boardParent;
     [SerializeField] private Transform vertexParent;
     [SerializeField] private Transform edgeParent;
@@ -116,13 +122,14 @@ public class GameBoardManager : MonoBehaviour
 
         foreach(BoardVertex vert in boardVertices)
         {
-            if (vert.VertexId == id)
-                return vert;
+            if(vert != null)
+                if (vert.VertexId == id)
+                    return vert;
         }
 
         return null;
     }
-        
+
 
     private void Update()
     {
@@ -131,18 +138,51 @@ public class GameBoardManager : MonoBehaviour
             VertexClicked();
             return;
         }
-        if (Input.GetMouseButtonUp(0))
-            VertexReleased();
 
-        if(Input.GetMouseButtonDown(1))
+        if (gameBoardState == GameBoardStateEnum.mapEditor)
         {
-            RemoveVertexUnderMouse();
-        }    
+            if (vertexToMove != null)
+            {
+                Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+                vertexToMove.position = new Vector3(mousePos.x, mousePos.y, vertexToMove.position.z);
 
-        if(Input.GetKeyDown(KeyCode.Return))
-        {
-            SaveMapToPrefab();
+                //Update linerenderes
+                for (int i = 0; i < boardEdgesTable.Count; i++)
+                {
+                    for (int j = 0; j < boardEdgesTable.Count; j++)
+                    {
+                        if (boardEdgesTable[i][j] != null)
+                        {
+                            boardEdgesTable[i][j].UpdateLineRenderer();
+                        }
+                    }
+                }
+            }
+
+            if (Input.GetMouseButtonUp(0))
+                VertexReleased();
+
+            if (Input.GetMouseButtonDown(1))
+                RemoveVertexUnderMouse();
+
+            if (Input.GetKeyDown(KeyCode.Tab))
+                SwapVertexEdgeMode();
+
+            if (Input.GetKeyDown(KeyCode.Return))
+                SaveMapToPrefab();
         }
+    }
+
+    private void SwapVertexEdgeMode()
+    {
+        vertexToMove = null;
+
+        vertexMode = !vertexMode;
+
+        if (vertexMode)
+            vertexModeText.text = "Vertex Mode (Press TAB to switch)";
+        else
+            vertexModeText.text = "Edge Mode (Press TAB to switch)";
     }
 
     private void SaveMapToPrefab()
@@ -170,7 +210,7 @@ public class GameBoardManager : MonoBehaviour
 
     private void OnMouseDown()
     {
-        if (gameBoardState == GameBoardStateEnum.mapEditor)
+        if ((gameBoardState == GameBoardStateEnum.mapEditor) && (vertexMode))
         {
             //Add new vertex when map is clicked on
             AddNewVertex();
@@ -295,7 +335,16 @@ public class GameBoardManager : MonoBehaviour
         if (gameBoardState == GameBoardStateEnum.mapEditor)
         {
             if (newVertex != null)
-                firstVertexClicked = newVertex;
+            {
+                if(vertexMode)
+                {
+                    vertexToMove = newVertex.gameObject.transform;
+                }
+                else
+                {
+                    firstVertexClicked = newVertex;
+                }
+            }
         }
         else
         {
@@ -306,6 +355,12 @@ public class GameBoardManager : MonoBehaviour
 
     public void VertexReleased()
     {
+        if(vertexMode)
+        {
+            vertexToMove = null;
+            return;
+        }
+
         RaycastHit2D hit = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
 
         BoardVertex newVertex = hit.transform.gameObject.GetComponent<BoardVertex>();

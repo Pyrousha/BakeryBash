@@ -4,8 +4,8 @@ using UnityEngine;
 
 public class BoardEdge : MonoBehaviour
 {
-    private BoardVertex firstVertex;
-    private BoardVertex secondVertex;
+    [SerializeField] private BoardVertex firstVertex;
+    [SerializeField] private BoardVertex secondVertex;
 
     [SerializeField] private int firstVertexID;
     [SerializeField] private int secondVertexID;

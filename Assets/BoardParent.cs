@@ -50,11 +50,20 @@ public class BoardParent : MonoBehaviour
         {
             for (int i = 0; i < boardVerticesIndecies.Count; i++)
             {
-                int indexValue = boardVerticesIndecies[i];
+                bool foundVertex = false;
 
-                if (indexValue > -1)
-                    boardVertices.Add(vertexParent.GetChild(i).GetComponent<BoardVertex>());
-                else
+                for (int j=0; j<vertexParent.childCount;j++)
+                {
+                    BoardVertex tempVert = vertexParent.GetChild(j).GetComponent<BoardVertex>();
+                    if (tempVert.VertexId == i)
+                    {
+                        boardVertices.Add(tempVert);
+                        foundVertex = true;
+                        continue;
+                    }
+                }
+
+                if(foundVertex == false)
                     boardVertices.Add(null);
             }
         }
