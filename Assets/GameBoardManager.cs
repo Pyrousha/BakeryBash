@@ -95,21 +95,32 @@ public class GameBoardManager : MonoBehaviour
 
                     if(tempListBoolList[i].bools[j])
                     {
-                        Debug.Log("edge should exist at (" + i + "," + j + "), actual value:" + boardEdgesTable[i][j]);
+                        //Debug.Log("edge should exist at (" + i + "," + j + "), actual value:" + boardEdgesTable[i][j]);
                         //if (boardEdgesTable[i][j] == null)
                             //Debug.Log("BRUH");
                     }
 
                     if(boardEdgesTable[i][j] != null)
                     {
-                        Debug.Log("found it! " + +i + "," + j + ")");
+                        //Debug.Log("found it! " + +i + "," + j + ")");
                     }
                 }
             }
 
             CalculateAdjacentVertices();
 
-            Debug.Log("table after load:" + PrintEdgeConnectionsTable());
+            //Debug.Log("table after load:" + PrintEdgeConnectionsTable());
+
+            //Load openIndices
+            for (int i = 0; i < boardVertices.Count; i++)
+            {
+                if (boardVertices[i] == null)
+                    openIndices.Add(i);
+            }
+
+            openIndices.Sort();
+
+            numVertices = boardVertices.Count;
         }
 
         doneStart = true;
@@ -260,7 +271,7 @@ public class GameBoardManager : MonoBehaviour
 
         CalculateAdjacentVertices();
 
-        Debug.Log("table after adding vertex:" + PrintEdgeConnectionsTable());
+        //Debug.Log("table after adding vertex:" + PrintEdgeConnectionsTable());
     }
 
     public void AddNewEdge(BoardVertex vertex1, BoardVertex vertex2)
@@ -273,6 +284,12 @@ public class GameBoardManager : MonoBehaviour
         }
 
         Debug.Log("AddnewEdge called with verticies with ids: " + vertex1.VertexId + ", " + vertex2.VertexId);
+
+        if(vertex1.VertexId == vertex2.VertexId)
+        {
+            Debug.LogError("Edge attempted to be added to the same vertex with id: " + vertex1.VertexId);
+            return;
+        }
 
         if(vertex1.VertexId < vertex2.VertexId)
         {
@@ -320,8 +337,6 @@ public class GameBoardManager : MonoBehaviour
 
             return;
         }
-
-        Debug.LogError("Edge attempted to be added to the same vertex with id: " + vertex1.VertexId);
     }
 
     private BoardVertex firstVertexClicked;
@@ -383,15 +398,17 @@ public class GameBoardManager : MonoBehaviour
 
     private void RemoveVertex(BoardVertex newVertex)
     {
-        Debug.Log("table before remove:"+ PrintEdgeConnectionsTable());
+        //Debug.Log("table before remove:"+ PrintEdgeConnectionsTable());
 
         int idToRemove = newVertex.VertexId;
-
-        Destroy(newVertex.gameObject);
         boardVertices[idToRemove] = null;
+ 
+        Destroy(newVertex.gameObject);
 
         openIndices.Add(idToRemove);
         openIndices.Sort();
+
+        Debug.Log("Trying to remove vertex with ID/index: " + idToRemove);
 
         //Remove relevant element from each row (remove vertex's column) from each table
         for (int i = 0; i < numVertices; i++)
@@ -409,8 +426,6 @@ public class GameBoardManager : MonoBehaviour
                 BoardEdge edgeToDelete = boardEdgesTable[i][idToRemove];
                 Destroy(edgeToDelete.gameObject);
 
-                //edgeConnectionsTable[i].RemoveAt(idToRemove);
-                //boardEdgesTable[i].RemoveAt(idToRemove);
                 boardEdgesTable[i][idToRemove] = null;
                 edgeConnectionsTable[i][idToRemove] = false;
             }
@@ -436,9 +451,10 @@ public class GameBoardManager : MonoBehaviour
             }
         }
 
-        CalculateAdjacentVertices();
 
-        Debug.Log("table after remove: "+ PrintEdgeConnectionsTable());
+        //Debug.Log("table after remove: " + PrintEdgeConnectionsTable());
+
+        CalculateAdjacentVertices();
     }
 
     public string PrintEdgeConnectionsTable()
@@ -469,7 +485,7 @@ public class GameBoardManager : MonoBehaviour
         {
             for (int j = 0; j < edgeConnectionsTable.Count; j++)
             {
-                if(edgeConnectionsTable[i][j])
+                if (edgeConnectionsTable[i][j])
                 {
                     BoardVertex v1 = boardVertices[i];
                     BoardVertex v2 = boardVertices[j];
