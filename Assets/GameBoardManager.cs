@@ -170,6 +170,21 @@ public class GameBoardManager : MonoBehaviour
                 }
             }
 
+            if(Input.GetKeyDown(KeyCode.Space))
+            {
+                //Update linerenderes
+                for (int i = 0; i < boardEdgesTable.Count; i++)
+                {
+                    for (int j = 0; j < boardEdgesTable.Count; j++)
+                    {
+                        if (boardEdgesTable[i][j] != null)
+                        {
+                            boardEdgesTable[i][j].UpdateLineRenderer();
+                        }
+                    }
+                }
+            }
+
             if (Input.GetMouseButtonUp(0))
                 VertexReleased();
 
