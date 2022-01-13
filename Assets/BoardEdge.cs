@@ -17,7 +17,8 @@ public class BoardEdge : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        //lineRend = GetComponent<LineRenderer>();
+        if (firstVertex != null && secondVertex != null)
+            UpdateLineRenderer();
     }
 
     public void SetVertices(BoardVertex vertex1, BoardVertex vertex2)
