@@ -469,7 +469,7 @@ MonoBehaviour:
     type: 3}
   boardEdgePrefab: {fileID: 7826806191669573225, guid: db0530010f10028418ca4138f2d67784,
     type: 3}
-  boardToLoadPrefab: {fileID: 4516590781170972095, guid: 17650495e9c297145af2dfc442834a6c,
+  boardToLoadPrefab: {fileID: 4404711299015663268, guid: d1a363a43166c2344ad7067eac48faf6,
     type: 3}
 --- !u!61 &640453774
 BoxCollider2D:
@@ -495,7 +495,7 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 60, y: 33.75}
+  m_Size: {x: 60, y: 60}
   m_EdgeRadius: 0
 --- !u!1 &691622579
 GameObject:
@@ -1099,7 +1099,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 16
+  orthographic size: 22
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
