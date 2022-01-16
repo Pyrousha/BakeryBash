@@ -14,11 +14,24 @@ public class BoardEdge : MonoBehaviour
 
     [SerializeField] private LineRenderer lineRend;
 
+    [System.Serializable]
+    public enum EdgeTypeEnum
+    {
+        normal, 
+        unwalkable,
+        specialTerrain
+    }
+
+    [SerializeField] private EdgeTypeEnum edgeType = EdgeTypeEnum.normal;
+    public EdgeTypeEnum EdgeType => edgeType;
+
     // Start is called before the first frame update
     void Start()
     {
         if (firstVertex != null && secondVertex != null)
             UpdateLineRenderer();
+
+        UpdateEdgeColor();
     }
 
     public void SetVertices(BoardVertex vertex1, BoardVertex vertex2)
@@ -36,5 +49,38 @@ public class BoardEdge : MonoBehaviour
     {
         lineRend.SetPosition(0, firstVertex.transform.position);
         lineRend.SetPosition(1, secondVertex.transform.position);
+    }
+
+    public void SetEdgeType(EdgeTypeEnum newType)
+    {
+        edgeType = newType;
+        UpdateEdgeColor();
+    }
+
+    public void UpdateEdgeColor()
+    {
+        Color newColor = Color.black;
+
+        switch (edgeType)
+        {
+            case EdgeTypeEnum.normal:
+                {
+                    //newColor = Color.black;
+                    break;
+                }
+            case EdgeTypeEnum.unwalkable:
+                {
+                    newColor = Color.red;
+                    break;
+                }
+            case EdgeTypeEnum.specialTerrain:
+                {
+                    newColor = Color.green;
+                    break;
+                }
+        }
+
+        lineRend.startColor = newColor;
+        lineRend.endColor = newColor;
     }
 }

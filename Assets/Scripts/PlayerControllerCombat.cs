@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Mirror;
+using System;
 
 public class PlayerControllerCombat : NetworkBehaviour
 {
@@ -15,10 +16,18 @@ public class PlayerControllerCombat : NetworkBehaviour
     private List<BoardVertex> validMoveVertices;
     private List<BoardVertex> validAttackVertices;
 
+    private int numCurrTokens;
+    private int maxTokens = 15;
+
     [Client]
     // Start is called before the first frame update
     void Start()
     {
+        validMoveVertices = new List<BoardVertex>();
+        validAttackVertices = new List<BoardVertex>();
+
+        numCurrTokens = maxTokens;
+
         transform.SetParent(GameObject.Find("Canvas").transform);
         transform.localScale = new Vector3(1, 1, 1);
 
@@ -39,6 +48,21 @@ public class PlayerControllerCombat : NetworkBehaviour
             SetHeroColors();
             combatManager.SetLocalPlayerNum(playerNum);
         }
+    }
+
+    [Server]
+    public void TurnStartedServer()
+    {
+        numCurrTokens = maxTokens;
+
+        TurnStartedClient();
+    }
+
+    [ClientRpc]
+    public void TurnStartedClient()
+    {
+        numCurrTokens = maxTokens;
+        combatManager.UpdateTokenVisualCount(numCurrTokens);
     }
 
     [Client]
@@ -91,7 +115,7 @@ public class PlayerControllerCombat : NetworkBehaviour
 
             selectedHero = newClickedHero;
 
-            List<BoardVertex> adjVertices = newClickedHero.CurrVertex.AdjacentVertices;
+            List<BoardVertex> adjVertices = boardManager.GetWalkableEdges(newClickedHero.CurrVertex, selectedHero.CanWalkOverSpecialTerrain);
 
             foreach (BoardVertex vertex in adjVertices)
             {
@@ -129,10 +153,11 @@ public class PlayerControllerCombat : NetworkBehaviour
             if(validAttackVertices.IndexOf(enemyHeroVertex) > -1)
             {
                 //Enemy hero is in range, so attack is valid
+                if(TryUseMoveTokens(1))
+                    enemyHero.TakeDamageServer(selectedHero.BasicAttackDamage);
 
-                enemyHero.TakeDamageServer(selectedHero.BasicAttackDamage);
-
-                EndMyTurn();
+                if (numCurrTokens == 0)
+                    EndMyTurn();
             }
         }
     }
@@ -141,24 +166,38 @@ public class PlayerControllerCombat : NetworkBehaviour
     public void OnVertexClicked(BoardVertex vertex)
     {
         if (combatManager.PlayerTurn != playerNum)
-        {
-            selectedHero = null;
-            validMoveVertices = null;
-
             return;
-        }
 
         if (validMoveVertices.IndexOf(vertex) > -1)
         {
             int heroIndex = combatManager.GetIndexOfHero(playerNum, selectedHero);
-            ServerMoveHero(playerNum, heroIndex, vertex.VertexId);
+            if (TryUseMoveTokens(1))
+                ServerMoveHero(playerNum, heroIndex, vertex.VertexId);
 
-            EndMyTurn();
+            if (numCurrTokens == 0)
+            {
+                ResetHeroMoveVisuals();
+                EndMyTurn();
+            }
         }
     }
 
     [Client]
-    public void EndMyTurn()
+    public void TryReclickHero(CombatHero hero)
+    {
+        if (combatManager.PlayerTurn != playerNum) 
+            return;
+
+        ResetHeroMoveVisuals();
+
+        if (numCurrTokens > 0)
+        {
+            OnHeroClicked(hero, true);
+        }
+    }
+
+    [Client]
+    private void ResetHeroMoveVisuals()
     {
         foreach (BoardVertex vert in validMoveVertices)
         {
@@ -170,9 +209,43 @@ public class PlayerControllerCombat : NetworkBehaviour
             vert.SetReticleActive(false);
         }
 
+        validMoveVertices = new List<BoardVertex>(); ;
+        validAttackVertices = new List<BoardVertex>(); ;
+    }
+
+    [Client]
+    private bool TryUseMoveTokens(int tokenCost)
+    {
+        if(numCurrTokens - tokenCost >= 0)
+        {
+            //player has enough tokens to do this move
+            numCurrTokens -= tokenCost;
+            combatManager.UpdateTokenVisualCount(numCurrTokens);
+
+            return true;
+        }
+        return false;
+    }
+
+    [Client]
+    public void EndMyTurn()
+    {
+        numCurrTokens = 0;
+        combatManager.UpdateTokenVisualCount(numCurrTokens);
+
+        foreach (BoardVertex vert in validMoveVertices)
+        {
+            vert.ResetColor();
+        }
+
+        foreach (BoardVertex vert in validAttackVertices)
+        {
+            vert.SetReticleActive(false);
+        }
+
         selectedHero = null;
-        validMoveVertices = null;
-        validAttackVertices = null;
+        validMoveVertices = new List<BoardVertex>();
+        validAttackVertices = new List<BoardVertex>();
 
         combatManager.DoneTurn();
     }
@@ -193,5 +266,8 @@ public class PlayerControllerCombat : NetworkBehaviour
         CombatHero heroToMove = combatManager.GetHeroByIndex(playerNum, heroIndex);
         BoardVertex vertex = boardManager.GetVertexWithId(newVertexId);
         heroToMove.MoveToVertex(vertex);
+
+        if(heroToMove.IsMine)
+            TryReclickHero(heroToMove);
     }
 }

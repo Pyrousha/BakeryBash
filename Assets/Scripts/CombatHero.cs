@@ -8,6 +8,7 @@ using System;
 public class CombatHero : NetworkBehaviour
 {
     [SerializeField] private bool isMine;
+    public bool IsMine => isMine;
 
     [Header("HeroObject")]
     [SerializeField] private HeroObject heroObj;
@@ -20,6 +21,8 @@ public class CombatHero : NetworkBehaviour
     private int maxHp;
     private int hp;
     public int Hp => hp;
+    private bool canWalkOverSpecialTerrain;
+    public bool CanWalkOverSpecialTerrain => canWalkOverSpecialTerrain;
 
     [Header("References")]
     [SerializeField] private SpriteRenderer heroSpriteRend;
@@ -102,6 +105,7 @@ public class CombatHero : NetworkBehaviour
 
         basicAttackRange = heroObj.BasicAttackRange;
         basicAttackDamage = heroObj.BasicAttackDamage;
+        canWalkOverSpecialTerrain = heroObj.CanWalkOverSpecialTerrain;
         maxHp = heroObj.MaxHp;
         hp = maxHp;
 

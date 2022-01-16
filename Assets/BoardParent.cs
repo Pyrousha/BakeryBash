@@ -90,7 +90,7 @@ public class BoardParent : MonoBehaviour
 
         doneStart = true;
 
-        Debug.Log("edge table: " + PrintEdgeConnectionsTable());
+        //Debug.Log("edge table: " + PrintEdgeConnectionsTable());
     }
 
     public void SetBoardVertices(List<BoardVertex> newBoardVertices)

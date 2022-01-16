@@ -15,6 +15,8 @@ public class CombatManager : NetworkBehaviour
         localPlayerNum = newNum;
 
         UpdateTurnIndicator();
+        SetTokenColor();
+        endTurnButton.SetActive(playerTurn == localPlayerNum);
     }
 
     [Header("References")]
@@ -23,6 +25,9 @@ public class CombatManager : NetworkBehaviour
 
     [SerializeField] private List<CombatHero> p1Heroes;
     [SerializeField] private List<CombatHero> p2Heroes;
+
+    [SerializeField] private Transform tokenSpriteParent;
+    [SerializeField] private GameObject endTurnButton;
 
     public List<CombatHero> GetP1Heroes => p1Heroes;
     public List<CombatHero> GetP2Heroes => p2Heroes;
@@ -36,12 +41,19 @@ public class CombatManager : NetworkBehaviour
     public Color TeamColor => teamColor;
     public Color EnemyColor => enemyColor;
 
+    [SerializeField] private Color playerTokenColor;
+    [SerializeField] private Color enemyTokenColor;
+
     [Command(requiresAuthority = false)]
     public void DoneTurn()
     {
         playerTurn = (playerTurn == 1) ? 2 : 1;
 
         SetPlayerTurnOnClient(playerTurn);
+
+        SetTokenColorClient();
+
+        GetCurrPlayerController().TurnStartedServer();
     }
 
     [ClientRpc]
@@ -50,6 +62,7 @@ public class CombatManager : NetworkBehaviour
         playerTurn = playerTurnNum;
 
         UpdateTurnIndicator();
+        endTurnButton.SetActive(playerTurn == localPlayerNum);
     }
 
     public PlayerControllerCombat GetCurrPlayerController()
@@ -102,6 +115,58 @@ public class CombatManager : NetworkBehaviour
         {
             turnColorImg.color = enemyColor;
             turnText.text = "Enemy's turn";
+        }
+    }
+
+    public void EndTurnButtonClicked()
+    {
+        if (localPlayerNum != playerTurn)
+            return; //not my turn
+
+        GetCurrPlayerController().EndMyTurn();
+    }
+
+    [Command(requiresAuthority = false)]
+    public void UpdateTokenVisualCount(int numCurrTokens)
+    {
+        UpdateTokenVisualCountClient(numCurrTokens);
+    }
+
+    [ClientRpc]
+    public void UpdateTokenVisualCountClient(int numCurrTokens)
+    {
+        for (int i = 0; i < tokenSpriteParent.childCount; i++)
+        {
+            tokenSpriteParent.GetChild(i).gameObject.SetActive(i < numCurrTokens);
+        }
+    }
+
+    public void SetTokenColor()
+    {
+        Color colToUse;
+        if (localPlayerNum == playerTurn)
+            colToUse = playerTokenColor;
+        else
+            colToUse = enemyTokenColor;
+
+        for (int i = 0; i < tokenSpriteParent.childCount; i++)
+        {
+            tokenSpriteParent.GetChild(i).GetComponent<Image>().color = colToUse;
+        }
+    }
+
+    [ClientRpc]
+    public void SetTokenColorClient()
+    {
+        Color colToUse;
+        if (localPlayerNum == playerTurn)
+            colToUse = playerTokenColor;
+        else
+            colToUse = enemyTokenColor;
+
+        for (int i = 0; i < tokenSpriteParent.childCount; i++)
+        {
+            tokenSpriteParent.GetChild(i).GetComponent<Image>().color = colToUse;
         }
     }
 }

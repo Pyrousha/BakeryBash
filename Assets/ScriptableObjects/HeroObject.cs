@@ -17,6 +17,9 @@ public class HeroObject : ScriptableObject
     [SerializeField] private int basicAttackDamage;
     public int BasicAttackDamage => basicAttackDamage;
 
+    [SerializeField] private bool canWalkOverSpecialTerrain;
+    public bool CanWalkOverSpecialTerrain => canWalkOverSpecialTerrain;
+
     [SerializeField] private int maxHp;
     public int MaxHp => maxHp;
 }

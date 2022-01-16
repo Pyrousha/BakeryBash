@@ -50,6 +50,14 @@ public class GameBoardManager : MonoBehaviour
         if (doneStart)
             return;
 
+        if(GameObject.Find("Countdown Canvas")!= null)
+        {
+            //Game should be in "play" mode
+            gameBoardState = GameBoardStateEnum.playing;
+
+            vertexModeText.gameObject.SetActive(false);
+        }
+
         openIndices = new List<int>();
 
         //create new empty board
@@ -126,6 +134,40 @@ public class GameBoardManager : MonoBehaviour
         doneStart = true;
     }
 
+    public List<BoardVertex> GetWalkableEdges(BoardVertex currVertex, bool canWalkOverSpecialTerrain)
+    {
+        List<BoardVertex> adjVertices = new List<BoardVertex>();
+
+        int currVertexID = currVertex.VertexId;
+
+        foreach(BoardVertex vert in currVertex.AdjacentVertices)
+        {
+            BoardEdge.EdgeTypeEnum edgeType = GetEdgeWithVertices(currVertexID, vert.VertexId).EdgeType;
+
+            bool addToList = false;
+
+            switch (edgeType)
+            {
+                case BoardEdge.EdgeTypeEnum.normal:
+                    {
+                        addToList = true;
+                        break;
+                    }
+                case BoardEdge.EdgeTypeEnum.specialTerrain:
+                    {
+                        if (canWalkOverSpecialTerrain)
+                            addToList = true;
+                        break;
+                    }
+            }
+
+            if (addToList)
+                adjVertices.Add(vert);
+        }
+
+        return adjVertices;
+    }
+
     public BoardVertex GetVertexWithId(int id)
     {
         if (!doneStart)
@@ -138,6 +180,19 @@ public class GameBoardManager : MonoBehaviour
                     return vert;
         }
 
+        return null;
+    }
+
+    public BoardEdge GetEdgeWithVertices(int vertID1, int vertID2)
+    {
+        if(vertID1 < vertID2)
+        {
+            return boardEdgesTable[vertID1][vertID2];
+        }
+        if(vertID2 < vertID1)
+        {
+            return boardEdgesTable[vertID2][vertID1];
+        }
         return null;
     }
 
@@ -360,6 +415,9 @@ public class GameBoardManager : MonoBehaviour
     {
         RaycastHit2D hit = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
 
+        if (hit.transform == null)
+            return;
+
         BoardVertex newVertex = hit.transform.gameObject.GetComponent<BoardVertex>();
 
         if (gameBoardState == GameBoardStateEnum.mapEditor)
@@ -502,6 +560,8 @@ public class GameBoardManager : MonoBehaviour
             {
                 if (edgeConnectionsTable[i][j])
                 {
+                    //Debug.Log("Trying to set adjacent vertices for edge connecting " + i + " and " + j);
+
                     BoardVertex v1 = boardVertices[i];
                     BoardVertex v2 = boardVertices[j];
 
