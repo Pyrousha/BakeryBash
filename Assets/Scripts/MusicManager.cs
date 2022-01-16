@@ -34,6 +34,10 @@ class MusicManager : MonoBehaviour
         public FMOD.StringWrapper lastMarker = new FMOD.StringWrapper();
     }
 
+    public CutsceneManager cutscene;
+
+    string lastMarkerName;
+
     TimelineInfo timelineInfo;
     GCHandle timelineHandle;
 
@@ -106,5 +110,28 @@ class MusicManager : MonoBehaviour
             }
         }
         return FMOD.RESULT.OK;
+    }
+
+    void Update() {
+        if(lastMarkerName != (string) timelineInfo.lastMarker) {
+            lastMarkerName = (string) timelineInfo.lastMarker;
+            switch (lastMarkerName) {
+                case "Text 1":
+                    cutscene.FadeText1();
+                    break;
+                case "Text 2":
+                    cutscene.FadeText2();
+                    break;
+                case "Text 3":
+                    cutscene.FadeText3();
+                    break;
+                case "Text 4":
+                    cutscene.FadeText4();
+                    break;
+                case "Main Menu":
+                    cutscene.StartMenu();
+                    break;
+            }
+        }
     }
 }
