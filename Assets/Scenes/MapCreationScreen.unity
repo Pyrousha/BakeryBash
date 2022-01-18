@@ -1113,7 +1113,7 @@ MonoBehaviour:
     type: 3}
   boardEdgePrefab: {fileID: 7826806191669573225, guid: db0530010f10028418ca4138f2d67784,
     type: 3}
-  boardToLoadPrefab: {fileID: 4404711299015663268, guid: d1a363a43166c2344ad7067eac48faf6,
+  boardToLoadPrefab: {fileID: 3796092202126929340, guid: d02b4eb3b33412a4fa806397a29b9c7f,
     type: 3}
 --- !u!61 &640453774
 BoxCollider2D:
@@ -1139,7 +1139,7 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 60, y: 60}
+  m_Size: {x: 65, y: 45}
   m_EdgeRadius: 0
 --- !u!1 &645642188
 GameObject:
