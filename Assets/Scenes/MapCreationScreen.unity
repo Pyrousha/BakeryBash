@@ -1113,7 +1113,7 @@ MonoBehaviour:
     type: 3}
   boardEdgePrefab: {fileID: 7826806191669573225, guid: db0530010f10028418ca4138f2d67784,
     type: 3}
-  boardToLoadPrefab: {fileID: 3796092202126929340, guid: d02b4eb3b33412a4fa806397a29b9c7f,
+  boardToLoadPrefab: {fileID: 6320302817466013091, guid: 9046133b17f2ddb44ae4440ff0fd526d,
     type: 3}
 --- !u!61 &640453774
 BoxCollider2D:

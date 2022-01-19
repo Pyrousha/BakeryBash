@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<objects serializationModel="Studio.02.02.00">
+	<object class="AudioFile" id="{06fc3c3a-945b-40a4-bbd8-24cf45b46d5c}">
+		<property name="assetPath">
+			<value>pastrysong1.wav</value>
+		</property>
+		<property name="isStreaming">
+			<value>true</value>
+		</property>
+		<property name="frequencyInKHz">
+			<value>44.0999985</value>
+		</property>
+		<property name="channelCount">
+			<value>2</value>
+		</property>
+		<property name="length">
+			<value>143.57142857142858</value>
+		</property>
+		<relationship name="masterAssetFolder">
+			<destination>{3b064867-d39e-4d16-858f-c73ede3e176b}</destination>
+		</relationship>
+	</object>
+</objects>

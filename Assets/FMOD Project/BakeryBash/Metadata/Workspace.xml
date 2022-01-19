@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<objects serializationModel="Studio.02.02.00">
+	<object class="Workspace" id="{894615a9-1699-4489-887f-f366e593053e}">
+		<property name="builtBanksOutputDirectory">
+			<value>../../GitHub/BakeryBash/Assets/FMOD Builds</value>
+		</property>
+		<relationship name="masterEventFolder">
+			<destination>{32eec65e-5d5c-4cca-aa27-b8757e871f0c}</destination>
+		</relationship>
+		<relationship name="masterTagFolder">
+			<destination>{d7f8d742-b220-4cb7-965e-4576a37aa745}</destination>
+		</relationship>
+		<relationship name="masterEffectPresetFolder">
+			<destination>{09ef5737-5805-49b3-87f9-9221349c5968}</destination>
+		</relationship>
+		<relationship name="masterParameterPresetFolder">
+			<destination>{4627722f-043e-4329-a900-046dd03a0757}</destination>
+		</relationship>
+		<relationship name="masterBankFolder">
+			<destination>{3d437b97-12c2-4632-9dc3-2d73ed25ce23}</destination>
+		</relationship>
+		<relationship name="masterSandboxFolder">
+			<destination>{b9f3b4db-d444-48de-9cc2-4338cc06bc0f}</destination>
+		</relationship>
+		<relationship name="masterAssetFolder">
+			<destination>{3b064867-d39e-4d16-858f-c73ede3e176b}</destination>
+		</relationship>
+		<relationship name="mixer">
+			<destination>{2260159c-6e9c-467f-95e4-8ada2e92f05c}</destination>
+		</relationship>
+		<relationship name="profilerSessionFolder">
+			<destination>{67127946-c1f7-4242-bb4c-cc26d42e842c}</destination>
+		</relationship>
+		<relationship name="platforms">
+			<destination>{ecc8c4e8-f5f0-477a-bb93-0a9dfe559dd6}</destination>
+		</relationship>
+	</object>
+</objects>
