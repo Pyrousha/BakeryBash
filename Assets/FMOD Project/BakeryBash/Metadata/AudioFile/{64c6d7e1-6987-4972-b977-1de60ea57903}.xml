@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<objects serializationModel="Studio.02.02.00">
+	<object class="AudioFile" id="{64c6d7e1-6987-4972-b977-1de60ea57903}">
+		<property name="assetPath">
+			<value>pastrysong2_sticks.wav</value>
+		</property>
+		<property name="isStreaming">
+			<value>true</value>
+		</property>
+		<property name="frequencyInKHz">
+			<value>44.0999985</value>
+		</property>
+		<property name="channelCount">
+			<value>2</value>
+		</property>
+		<property name="length">
+			<value>24</value>
+		</property>
+		<relationship name="masterAssetFolder">
+			<destination>{3b064867-d39e-4d16-858f-c73ede3e176b}</destination>
+		</relationship>
+	</object>
+</objects>
