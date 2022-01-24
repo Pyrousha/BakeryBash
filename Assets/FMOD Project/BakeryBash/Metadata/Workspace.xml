@@ -2,7 +2,7 @@
 <objects serializationModel="Studio.02.02.00">
 	<object class="Workspace" id="{894615a9-1699-4489-887f-f366e593053e}">
 		<property name="builtBanksOutputDirectory">
-			<value>../../GitHub/BakeryBash/Assets/FMOD Builds</value>
+			<value>../../FMOD Builds</value>
 		</property>
 		<relationship name="masterEventFolder">
 			<destination>{32eec65e-5d5c-4cca-aa27-b8757e871f0c}</destination>
