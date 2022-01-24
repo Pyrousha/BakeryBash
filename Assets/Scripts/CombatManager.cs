@@ -26,14 +26,26 @@ public class CombatManager : NetworkBehaviour
     [SerializeField] private List<CombatHero> p1Heroes;
     [SerializeField] private List<CombatHero> p2Heroes;
 
+    [SerializeField] private List<CombatHero> p1Towers;
+    [SerializeField] private List<CombatHero> p2Towers;
+    public List<CombatHero> GetP1Towers => p1Towers;
+    public List<CombatHero> GetP2Towers => p2Towers;
+
     [SerializeField] private Transform tokenSpriteParent;
     [SerializeField] private GameObject endTurnButton;
+
+    [SerializeField] private GameObject winOverlay;
+    [SerializeField] private GameObject loseOverlay;
 
     public List<CombatHero> GetP1Heroes => p1Heroes;
     public List<CombatHero> GetP2Heroes => p2Heroes;
 
     [SerializeField] private Image turnColorImg;
     [SerializeField] private Text turnText;
+
+    [Header("Prefabs")]
+    [SerializeField] private GameObject blueAttackProjectile;
+    [SerializeField] private GameObject redAttackProjectile;
 
     [Header("Colors")]
     [SerializeField] private Color teamColor;
@@ -54,6 +66,12 @@ public class CombatManager : NetworkBehaviour
         SetTokenColorClient();
 
         GetCurrPlayerController().TurnStartedServer();
+
+        //Try to shoot at all enemies that are in the new player's tower range
+        if(playerTurn == 1)
+            FireTowers(p1Towers);
+        else
+            FireTowers(p2Towers);
     }
 
     [ClientRpc]
@@ -169,4 +187,47 @@ public class CombatManager : NetworkBehaviour
             tokenSpriteParent.GetChild(i).GetComponent<Image>().color = colToUse;
         }
     }
+
+    [Server]
+    public void FireTowers(List<CombatHero> towers)
+    {
+        for(int i=0; i< towers.Count; i++)
+        {
+            if(towers[i].gameObject.activeSelf)
+                towers[i].OnTurnStartTower();
+        }
+    }
+
+    [Client]
+    public void EndGame(bool isMine)
+    {
+        if(isMine)
+        {
+            //player's core destroyed, lose
+            loseOverlay.SetActive(true);
+        }
+        else
+        {
+            //enemy core destroyed, win! (well done gamer :^D)
+            winOverlay.SetActive(true);
+        }
+    }
+
+    [Client]
+    public void SpawnAttackProjectile(bool localPlayerAttacking, Vector3 startPos, Vector3 endpos)
+    {
+        AttackProjectile projectile;
+
+        if(localPlayerAttacking)
+        {
+            projectile = Instantiate(blueAttackProjectile).GetComponent<AttackProjectile>();
+        }
+        else
+        {
+            projectile = Instantiate(redAttackProjectile).GetComponent<AttackProjectile>();
+        }
+
+        projectile.SetPositions(startPos, endpos);
+    }
+
 }

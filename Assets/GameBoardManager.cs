@@ -469,7 +469,7 @@ public class GameBoardManager : MonoBehaviour
             RemoveVertex(newVertex);
     }
 
-    private void RemoveVertex(BoardVertex newVertex)
+    public void RemoveVertex(BoardVertex newVertex)
     {
         //Debug.Log("table before remove:"+ PrintEdgeConnectionsTable());
 

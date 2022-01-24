@@ -190,6 +190,7 @@ GameObject:
   - component: {fileID: 7049794297846860888}
   - component: {fileID: 7049794297846860894}
   - component: {fileID: 7049794297846860895}
+  - component: {fileID: 2780742724133227651}
   m_Layer: 0
   m_Name: BoardVertexPrefab
   m_TagString: Untagged
@@ -290,10 +291,29 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 38de60d045d17ad49a81df106784fb49, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  syncMode: 0
+  syncInterval: 0.1
   vertexId: 0
   reticleObj: {fileID: 8140437254438711064}
   indexDisplay: {fileID: 2508721965766208343}
   adjacentVertices: []
+--- !u!114 &2780742724133227651
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7049794297846860890}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b91ecbcc199f4492b9a91e820070131, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  sceneId: 0
+  serverOnly: 0
+  visible: 0
+  m_AssetId: b1e4710c420338842ba176e40b373e3c
+  hasSpawned: 0
 --- !u!1 &8140437254438711064
 GameObject:
   m_ObjectHideFlags: 0

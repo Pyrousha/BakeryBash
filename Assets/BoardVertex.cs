@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using Mirror;
 
-public class BoardVertex : MonoBehaviour
+public class BoardVertex : NetworkBehaviour
 {
     [SerializeField] private int vertexId;
     public int VertexId => vertexId;
@@ -15,6 +16,7 @@ public class BoardVertex : MonoBehaviour
     [SerializeField] private Text indexDisplay;
 
     public CombatHero combatHero { get; private set; }
+    private CombatHero tower;
 
     [SerializeField] private List<BoardVertex> adjacentVertices;
     public List<BoardVertex> AdjacentVertices => adjacentVertices;
@@ -41,7 +43,15 @@ public class BoardVertex : MonoBehaviour
 
     public void SetCombatHero(CombatHero newHero)
     {
+        if (newHero != null)
+            Debug.Log("Setting vertex with id " + vertexId + " to hero " + newHero.name);
+        else
+            Debug.Log("Setting vertex with id " + vertexId + " to hero NULL");
+
         combatHero = newHero;
+
+        if (newHero != null)
+            OnSteppedOn(newHero);
     }
 
     public void ResetAdjVertices()
@@ -79,5 +89,19 @@ public class BoardVertex : MonoBehaviour
     public void SetReticleActive(bool newActive)
     {
         reticleObj.SetActive(newActive);
+    }
+
+    public void SetTower(CombatHero newTower)
+    {
+        tower = newTower;
+    }
+
+    //[Command (requiresAuthority = false)]
+    public void OnSteppedOn(CombatHero hero)
+    {
+        if ((tower != null) && (tower.gameObject.activeSelf))
+        {
+            hero.SteppedOnTrappedVertex(tower);
+        }
     }
 }

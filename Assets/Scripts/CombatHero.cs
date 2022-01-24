@@ -37,10 +37,16 @@ public class CombatHero : NetworkBehaviour
     [SerializeField] private SpriteRenderer bgSpriteRend;
 
     [Header("Parametes and such")]
+    [SerializeField] private bool isTower = false;
+    [SerializeField] private bool isCore = false;
+    [SerializeField] private bool isInvincible = false;
+    public bool IsInvincible => isInvincible;
+    [SerializeField] private CombatHero nextTower;
+    private List<BoardVertex> trappedVertices;
+
     [SerializeField] private int startingVertexId = -1;
     private BoardVertex currVertex;
     public BoardVertex CurrVertex => currVertex;
-
 
     private bool doneStart = false;
 
@@ -62,6 +68,21 @@ public class CombatHero : NetworkBehaviour
             {
                 BoardVertex vert = FindObjectOfType<GameBoardManager>().GetVertexWithId(startingVertexId);
                 MoveToVertex(vert);
+            }
+        }
+
+        if (isTower)
+        {
+            if (isInvincible)
+            {
+                hpSlider.gameObject.SetActive(false);
+                hpText.gameObject.SetActive(false);
+            }
+
+            trappedVertices = currVertex.AdjacentVertices;
+            foreach(BoardVertex vert in trappedVertices)
+            {
+                vert.SetTower(this);
             }
         }
 
@@ -89,7 +110,10 @@ public class CombatHero : NetworkBehaviour
             enemyPlayerController = newPlayer;
         }
 
-        bgSpriteRend.color = colToUse;
+        if (isTower)
+            heroSpriteRend.color = colToUse;
+        else
+            bgSpriteRend.color = colToUse;
     }
 
     public void SetHeroObj(HeroObject newHeroObj)
@@ -114,12 +138,31 @@ public class CombatHero : NetworkBehaviour
 
     public void OnMouseDown()
     {
-        if (isMine)
-            playerController.OnHeroClicked(this, true);
+        if (isMine) 
+        {
+            //player should not be able to click their own towers to attack
+            if (!isTower)
+                playerController.OnHeroClicked(this, true);
+        }
         else
+            //Since this is an enemy, need to get its "enemy" player controller to get the local player's controller
             enemyPlayerController.OnHeroClicked(this, false);
     }
+
+    [ClientRpc]
+    public void OnTurnStartTower()
+    {
+        if (!isTower)
+            return; //this shouldn't be called, but just in case
+
+        if (!isMine)
+            return;
+
+        if(gameObject.activeSelf)
+            playerController.TryShootTower(this);
+    }
        
+    
     public void MoveToVertex(BoardVertex vertex)
     {
         if (currVertex != null)
@@ -130,8 +173,8 @@ public class CombatHero : NetworkBehaviour
         vertex.SetCombatHero(this);
     }
 
-    [Command(requiresAuthority =false)]
-    public void TakeDamageServer(int dmg)
+    [Command(requiresAuthority = false)]
+    public void TakeDamageServer(int dmg, Vector3 attackerPos)
     {
         if(dmg <= 0)
         {
@@ -141,15 +184,19 @@ public class CombatHero : NetworkBehaviour
 
         hp = Mathf.Max(0, hp - dmg);
 
-        UpdateHPClient(hp);
+        UpdateHPClient(hp, attackerPos);
 
         if (hp <= 0)
             HeroKilledServer();
     }
 
     [ClientRpc]
-    public void UpdateHPClient(int newHp)
+    public void UpdateHPClient(int newHp, Vector3 attackerPos)
     {
+        //Play attack animation
+        combatManager.SpawnAttackProjectile(!isMine, attackerPos, transform.position);
+
+        //Update HP values
         hp = newHp;
 
         UpdateHPBar();
@@ -166,11 +213,65 @@ public class CombatHero : NetworkBehaviour
 
     public void HeroKilledServer()
     {
+        if(isTower)
+        {
+            gameObject.SetActive(false);
+        }
+        else
+        {
 
+        }
     }
 
     public void HeroKilledClient()
     {
+        if(isTower)
+        {
+            if (currVertex != null)
+            {
+                FindObjectOfType<GameBoardManager>().RemoveVertex(currVertex);
+                if(nextTower!= null)
+                    nextTower.PrevTowerDestroyed();
+                else
+                {
+                    if (isCore)
+                        combatManager.EndGame(isMine);
+                }
+            }
 
+            foreach (BoardVertex vert in trappedVertices)
+            {
+                vert.SetTower(null);
+            }
+
+            gameObject.SetActive(false);
+        }
+        else
+        {
+
+        }
+    }
+
+    public void PrevTowerDestroyed()
+    {
+        isInvincible = false;
+        hpSlider.gameObject.SetActive(true);
+        hpText.gameObject.SetActive(true);
+    }
+
+    [Client]
+    public void SteppedOnTrappedVertex(CombatHero tower)
+    {
+        if ((!isClient) || (!isMine))
+            return;
+
+        if (isMine == tower.IsMine)
+            return; //ally tower should not attack
+
+        //Only process this on the client which owns this hero (just so no duplicate calls happen, idk what I'm doin lmaoooo)
+
+        Debug.Log("stepped on trapped vertex!");
+
+        TakeDamageServer(tower.heroObj.BasicAttackDamage, tower.transform.position);
     }
 }
