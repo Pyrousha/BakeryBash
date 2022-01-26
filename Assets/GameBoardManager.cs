@@ -28,6 +28,7 @@ public class GameBoardManager : MonoBehaviour
 
     [Header("References")]
     [SerializeField] private CombatManager combatManager;
+    [SerializeField] private CameraController cameraController;
     
     private bool vertexMode = true;
     private Transform vertexToMove;
@@ -413,7 +414,13 @@ public class GameBoardManager : MonoBehaviour
 
     public void VertexClicked()
     {
-        RaycastHit2D hit = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
+        Ray ray = Camera.main.ScreenPointToRay(new Vector3(Input.mousePosition.x, Input.mousePosition.y, 0));
+        Plane xy = new Plane(Vector3.forward, new Vector3(0, 0, 0));
+        float distance;
+        xy.Raycast(ray, out distance);
+        Debug.Log(ray.GetPoint(distance));
+
+        RaycastHit2D hit = Physics2D.Raycast(ray.GetPoint(distance), Vector2.zero);
 
         if (hit.transform == null)
             return;
@@ -437,6 +444,7 @@ public class GameBoardManager : MonoBehaviour
         else
         {
             if (newVertex != null)
+                cameraController.OnVertexClicked(newVertex);
                 combatManager.GetCurrPlayerController().OnVertexClicked(newVertex);
         }
     }
