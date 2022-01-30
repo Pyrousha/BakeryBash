@@ -60,6 +60,7 @@ public class BoardEdge : MonoBehaviour
     public void UpdateEdgeColor()
     {
         Color newColor = Color.black;
+        //newColor = Color.clear;
 
         switch (edgeType)
         {
@@ -71,6 +72,7 @@ public class BoardEdge : MonoBehaviour
             case EdgeTypeEnum.unwalkable:
                 {
                     newColor = Color.red;
+                    //newColor = Color.clear;
                     break;
                 }
             case EdgeTypeEnum.specialTerrain:

@@ -33,6 +33,8 @@ public class BoardVertex : NetworkBehaviour
         spriteRenderer = GetComponent<SpriteRenderer>();
 
         reticleObj.SetActive(false);
+
+        //indexDisplay.text = "";
     }
 
     public void SetVertexId(int newId)
@@ -43,10 +45,10 @@ public class BoardVertex : NetworkBehaviour
 
     public void SetCombatHero(CombatHero newHero)
     {
-        if (newHero != null)
-            Debug.Log("Setting vertex with id " + vertexId + " to hero " + newHero.name);
-        else
-            Debug.Log("Setting vertex with id " + vertexId + " to hero NULL");
+        //if (newHero != null)
+          //  Debug.Log("Setting vertex with id " + vertexId + " to hero " + newHero.name);
+        //else
+          //  Debug.Log("Setting vertex with id " + vertexId + " to hero NULL");
 
         combatHero = newHero;
 
@@ -69,11 +71,6 @@ public class BoardVertex : NetworkBehaviour
         {
             adjacentVertices.Add(newVertex);
         }
-    }
-
-    public void SetAdjacentVertices(List<BoardVertex> newAdjVertices)
-    {
-        adjacentVertices = newAdjVertices;
     }
 
     public void HighlightMove()

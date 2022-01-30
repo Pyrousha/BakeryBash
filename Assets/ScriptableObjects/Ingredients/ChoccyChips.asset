@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4d50cb62610a60e439b68cd6272a742a, type: 3}
+  m_Name: ChoccyChips
+  m_EditorClassIdentifier: 
+  id: 4
+  allySprite: {fileID: -9028938477123893177, guid: 2ea71fff4129f364c8181a039add12db,
+    type: 3}
+  enemySprite: {fileID: -3147275107796605358, guid: 2ea71fff4129f364c8181a039add12db,
+    type: 3}
+  inventorySprite: {fileID: 0}

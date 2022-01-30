@@ -43,7 +43,7 @@ public class CameraController : MonoBehaviour
     }
 
     public void OnVertexClicked(BoardVertex vertex) {
-        Debug.Log("Yo");
+        //Debug.Log("Yo");
         Vector3 vertexPos = vertex.gameObject.transform.position;
         transform.position = new Vector3(vertexPos.x, vertexPos.y, vertexPos.z);
     }

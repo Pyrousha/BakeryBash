@@ -418,7 +418,7 @@ public class GameBoardManager : MonoBehaviour
         Plane xy = new Plane(Vector3.forward, new Vector3(0, 0, 0));
         float distance;
         xy.Raycast(ray, out distance);
-        Debug.Log(ray.GetPoint(distance));
+        //Debug.Log(ray.GetPoint(distance));
 
         RaycastHit2D hit = Physics2D.Raycast(ray.GetPoint(distance), Vector2.zero);
 
@@ -431,7 +431,7 @@ public class GameBoardManager : MonoBehaviour
         {
             if (newVertex != null)
             {
-                if(vertexMode)
+                if (vertexMode)
                 {
                     vertexToMove = newVertex.gameObject.transform;
                 }
@@ -444,8 +444,10 @@ public class GameBoardManager : MonoBehaviour
         else
         {
             if (newVertex != null)
+            {
                 cameraController.OnVertexClicked(newVertex);
                 combatManager.GetCurrPlayerController().OnVertexClicked(newVertex);
+            }
         }
     }
 

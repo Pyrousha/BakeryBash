@@ -24,6 +24,18 @@ public class CombatHero : NetworkBehaviour
     private bool canWalkOverSpecialTerrain;
     public bool CanWalkOverSpecialTerrain => canWalkOverSpecialTerrain;
 
+    [Header("Ingredient Stuff")]
+    [SerializeField] private IngredientObject ingredientType;
+    [SerializeField] private bool isIngredient = false;
+    [SerializeField] private SpriteRenderer[] inventorySprites;
+    public bool IsIngredient => isIngredient;
+    private List<IngredientObject> inventory;
+    public List<IngredientObject> Inventory => inventory;
+    public bool IsInventoryFull()
+    {
+        return (inventory.Count >= 5);
+    }
+
     [Header("References")]
     [SerializeField] private SpriteRenderer heroSpriteRend;
     [SerializeField] private Text nameText;
@@ -85,6 +97,18 @@ public class CombatHero : NetworkBehaviour
                 vert.SetTower(this);
             }
         }
+        else
+        {
+            if(isIngredient)
+            {
+
+            }
+            else
+            {
+                //is a hero
+                inventory = new List<IngredientObject>();
+            }
+        }
 
         doneStart = true;
     }
@@ -95,6 +119,16 @@ public class CombatHero : NetworkBehaviour
             Start();
 
         isMine = newIsMine;
+
+        if (isIngredient)
+        {
+            heroSpriteRend.sprite = ingredientType.GetSprite(newIsMine);
+
+            isMine = false; //let anyone attack this
+
+            enemyPlayerController = newPlayer;
+            return;
+        }
 
         //Set this unit color based on if it is owned by the player
         Color colToUse;
@@ -182,12 +216,66 @@ public class CombatHero : NetworkBehaviour
             return;
         }
 
+        if(isIngredient)
+        {
+            TryAddIngredientClient(attackerPos, ingredientType.Id);
+            return;
+        }
+
         hp = Mathf.Max(0, hp - dmg);
 
         UpdateHPClient(hp, attackerPos);
 
         if (hp <= 0)
             HeroKilledServer();
+    }
+
+    [ClientRpc]
+    public void TryAddIngredientClient(Vector3 attackerPos, int ingredientId)
+    {
+        Vector3 dir = new Vector3(0, 0, 1);
+        RaycastHit2D[] hitArr = Physics2D.RaycastAll(attackerPos - new Vector3(0, 0, 0.5f), dir, 2);
+        Debug.DrawRay(attackerPos - new Vector3(0, 0, 1), dir, Color.red, 10f);
+
+        Debug.Log("debugRay");
+
+        foreach(RaycastHit2D hit in hitArr)
+        {
+            CombatHero tempHero = hit.collider.gameObject.GetComponent<CombatHero>();
+            if (tempHero != null)
+            {
+                tempHero.AddIngredientToInventory(combatManager.GetIngredientWithId(ingredientId));
+                return;
+            }
+        }
+    }
+
+    public void AddIngredientToInventory(IngredientObject newIngredient)
+    {
+        if (IsInventoryFull() == false)
+            inventory.Add(newIngredient);
+        else
+            Debug.Log("inventory already full!");
+
+        Debug.Log(newIngredient.name + " added to inventory");
+        if(playerController != null)
+            playerController.TryReclickCurrHero();
+
+        UpdateInventoryUI();
+    }
+
+    public void UpdateInventoryUI()
+    {
+        for(int i=0; i<inventorySprites.Length;i++)
+        {
+            Sprite tempSprite = null;
+            if(inventory.Count > i)
+            {
+                tempSprite = inventory[i].GetInventorySprite();
+            }
+
+            inventorySprites[i].sprite = tempSprite;
+        }
     }
 
     [ClientRpc]
@@ -203,6 +291,8 @@ public class CombatHero : NetworkBehaviour
 
         if (hp <= 0)
             HeroKilledClient();
+
+        enemyPlayerController.TryReclickCurrHero();
     }
 
     private void UpdateHPBar()

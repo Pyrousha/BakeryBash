@@ -92,6 +92,17 @@ public class PlayerControllerCombat : NetworkBehaviour
                 tower.SetOwnership(this, false);
             }
 
+            //Set map ingredient color
+            foreach (CombatHero ingredient in combatManager.GetP1Ingredients)
+            {
+                ingredient.SetOwnership(this, true);
+            }
+            foreach (CombatHero ingredient in combatManager.GetP2Ingredients)
+            {
+                ingredient.SetOwnership(this, false);
+            }
+
+
             return;
         }
         if (playerNum == 2)
@@ -117,6 +128,16 @@ public class PlayerControllerCombat : NetworkBehaviour
             {
                 tower.SetOwnership(this, true);
             }
+
+            //Set map ingredient color
+            foreach (CombatHero ingredient in combatManager.GetP1Ingredients)
+            {
+                ingredient.SetOwnership(this, false);
+            }
+            foreach (CombatHero ingredient in combatManager.GetP2Ingredients)
+            {
+                ingredient.SetOwnership(this, true);
+            }
         }
     }
 
@@ -124,6 +145,8 @@ public class PlayerControllerCombat : NetworkBehaviour
     public void OnHeroClicked(CombatHero newClickedHero, bool isMine)
     {
         //Note: this is only called on the player's combatController
+
+        Debug.Log("clicked on hero " + newClickedHero.gameObject.name);
 
         if (combatManager.PlayerTurn != playerNum)
         {
@@ -149,14 +172,34 @@ public class PlayerControllerCombat : NetworkBehaviour
             //Calculate valid attack vertices
             validAttackVertices = new List<BoardVertex>();
 
+            //Get valid attack vertices (not including ingredients)
             List<BoardVertex> tempValidAttackVertices = GraphHelper.BFS(newClickedHero.CurrVertex, newClickedHero.BasicAttackRange);
             foreach(BoardVertex vert in tempValidAttackVertices)
             {
                 if ((vert.combatHero != null) && (vert.combatHero.IsMine == false) && (vert.combatHero.IsInvincible == false))
-                    validAttackVertices.Add(vert);
+                {
+                    if (vert.combatHero.IsIngredient == false)
+                    {
+                        validAttackVertices.Add(vert);
+                    }
+                }
             }
 
-            foreach(BoardVertex vert in validAttackVertices)
+            //Add ingredients to valid attack vertices
+            tempValidAttackVertices = GraphHelper.BFS(newClickedHero.CurrVertex, 1);
+            foreach (BoardVertex vert in tempValidAttackVertices)
+            {
+                if ((vert.combatHero != null) && (vert.combatHero.IsMine == false) && (vert.combatHero.IsInvincible == false))
+                {
+                    if (vert.combatHero.IsIngredient)
+                    {
+                        if (selectedHero.IsInventoryFull() == false)
+                            validAttackVertices.Add(vert); //only add ingredient if inventory is not full and vertex is adjacent
+                    }
+                }
+            }
+
+            foreach (BoardVertex vert in validAttackVertices)
             {
                 vert.SetReticleActive(true);
             }
@@ -177,9 +220,25 @@ public class PlayerControllerCombat : NetworkBehaviour
                 //Enemy hero is in range, so attack is valid
                 if (TryUseMoveTokens(1))
                 {
-                    enemyHero.TakeDamageServer(selectedHero.BasicAttackDamage, selectedHero.transform.position);
+                    if(enemyHero.IsIngredient) //enemy is an ingredient, must check inventory
+                    {
+                        if (selectedHero.IsInventoryFull() == false) //inventory not full, attack (add item to inventory) and use move token
+                        {
+                            enemyHero.TakeDamageServer(selectedHero.BasicAttackDamage, selectedHero.transform.position);
+                        }
+                        else
+                        {
+                            Debug.Log("inventory full, refunding token");
+                            //Inventory is full, refund spent move tokens and do not process attack
+                            numCurrTokens += 1;
+                            combatManager.UpdateTokenVisualCount(numCurrTokens);
+                        }
+                    }
+                    else //enemy is not an ingredient, process damage as normal
+                    {
+                        enemyHero.TakeDamageServer(selectedHero.BasicAttackDamage, selectedHero.transform.position);
+                    }
                 }
-
                 if (numCurrTokens == 0)
                     EndMyTurn();
             }
@@ -222,6 +281,13 @@ public class PlayerControllerCombat : NetworkBehaviour
     }
 
     [Client]
+    public void TryReclickCurrHero()
+    {
+        if (selectedHero != null)
+            TryReclickHero(selectedHero);
+    }
+
+    [Client]
     public void TryReclickHero(CombatHero hero)
     {
         if (combatManager.PlayerTurn != playerNum) 
@@ -238,6 +304,8 @@ public class PlayerControllerCombat : NetworkBehaviour
     [Client]
     private void ResetHeroMoveVisuals()
     {
+        Debug.Log("hero visuals reset");
+
         foreach (BoardVertex vert in validMoveVertices)
         {
             if (vert != null)

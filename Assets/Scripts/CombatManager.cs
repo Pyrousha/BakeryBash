@@ -19,6 +19,13 @@ public class CombatManager : NetworkBehaviour
         endTurnButton.SetActive(playerTurn == localPlayerNum);
     }
 
+    [Header("Data")]
+    [SerializeField] private IngredientObject[] ingredients;
+    public IngredientObject GetIngredientWithId(int id)
+    {
+        return ingredients[id];
+    }
+
     [Header("References")]
     [SerializeField] private PlayerControllerCombat p1Controller;
     [SerializeField] private PlayerControllerCombat p2Controller;
@@ -30,6 +37,11 @@ public class CombatManager : NetworkBehaviour
     [SerializeField] private List<CombatHero> p2Towers;
     public List<CombatHero> GetP1Towers => p1Towers;
     public List<CombatHero> GetP2Towers => p2Towers;
+
+    [SerializeField] private List<CombatHero> p1Ingredients;
+    [SerializeField] private List<CombatHero> p2Ingredients;
+    public List<CombatHero> GetP1Ingredients => p1Ingredients;
+    public List<CombatHero> GetP2Ingredients => p2Ingredients;
 
     [SerializeField] private Transform tokenSpriteParent;
     [SerializeField] private GameObject endTurnButton;
