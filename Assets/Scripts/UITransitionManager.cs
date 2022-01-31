@@ -20,6 +20,12 @@ public class UITransitionManager : MonoBehaviour
 
         [Space(10)]
 
+        [SerializeField] public bool includeScale;
+        [SerializeField] public float scaleEnd;
+        [SerializeField] public float scaleTime;
+
+        [Space(10)]
+
         [SerializeField] public bool includeAlpha;
         [SerializeField] public float alphaEnd;
         [SerializeField] public float alphaTime;
@@ -45,6 +51,9 @@ public class UITransitionManager : MonoBehaviour
         }
         if (transition.includePosition) {
             transform.DOLocalMove(transition.positionEnd, transition.positionTime);
+        }
+        if (transition.includeScale) {
+            transform.DOScale(transition.scaleEnd, transition.scaleTime);
         }
         if (transition.includeAlpha) {
             cGroup.DOFade(transition.alphaEnd, transition.alphaTime);
