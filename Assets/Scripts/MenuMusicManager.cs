@@ -23,7 +23,7 @@ using System;
 using System.Runtime.InteropServices;
 using UnityEngine;
 
-class MusicManager : MonoBehaviour
+class MenuMusicManager : MonoBehaviour
 {
     // Variables that are modified in the callback need to be part of a seperate class.
     // This class needs to be 'blittable' otherwise it can't be pinned in memory.
