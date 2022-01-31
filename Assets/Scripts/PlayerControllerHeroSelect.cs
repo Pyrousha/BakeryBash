@@ -10,12 +10,12 @@ public class PlayerControllerHeroSelect : NetworkBehaviour
 
     public GameObject activePlayerBorder;
 
-    public Text playerNameText;
-
-    private HeroObject selectedHero;
+    //public Text playerNameText;
 
     public Text selectedHeroNameText;
     public Image selectedHeroImage;
+
+    [SerializeField] private Text bioText;
 
     private NetworkManagerPlayerSelect networkManager;
     private PlayerLobbyDetails playerLobbyDetails;
@@ -23,10 +23,17 @@ public class PlayerControllerHeroSelect : NetworkBehaviour
     [SerializeField] private HeroObject[] selectableHeroes;
     [SerializeField] private Image readyButtonImage;
     [SerializeField] private Text readyButtonText;
+    [SerializeField] private GameObject readyButtonHighlight;
+    [SerializeField] private Image enemyReadyButtonImage;
+    [SerializeField] private Text enemyReadyButtonText;
     private bool isReady = false;
+
+    private List<int> selectedHeroIds;
 
     private void Start()
     {
+        selectedHeroIds = new List<int>();
+
         networkManager = GameObject.Find("NetworkManager").GetComponent<NetworkManagerPlayerSelect>();
 
         transform.SetParent(GameObject.Find("Canvas").transform);
@@ -40,96 +47,122 @@ public class PlayerControllerHeroSelect : NetworkBehaviour
             //is player 1
             playerNum = 1;
             playerLobbyDetails = GameObject.Find("P1LobbyDetails").GetComponent<PlayerLobbyDetails>();
+            networkManager.SetP1Controller(this);
         }
         else
         {
             //is player 2
             playerNum = 2;
             playerLobbyDetails = GameObject.Find("P2LobbyDetails").GetComponent<PlayerLobbyDetails>();
+            networkManager.SetP2Controller(this);
         }
 
         if (isLocalPlayer)
         {
-            playerNameText.text = "You!";
+            Debug.Log("I am player" + playerNum);
+            //playerNameText.text = "You!";
 
             playerLobbyDetails.SetIsMe(true);
         }
         else
         {
-            playerNameText.text = "Enemy Gamer";
+            //playerNameText.text = "Enemy Gamer";
         }
 
+        if(isClient)
+            CheckDestroySelf();
+
+        transform.localPosition = Vector3.zero;
+
         SetReadyVisuals();
+    }
+
+    [Client]
+    public void CheckDestroySelf()
+    {
+        if (!isLocalPlayer)
+            gameObject.SetActive(false);
     }
 
     //Called when player clicks on a hero
     [Client]
-    public void SelectHero(int heroId)
+    public void SelectHero(int heroId, GameObject selectionObj)
     {
+        SetHero(heroId);
+
         if ((!isLocalPlayer) || (isReady))
             return;
 
-        SendHeroSelectionToServer(heroId);
+        if (selectedHeroIds.IndexOf(heroId) > -1)
+        {
+            //hero already selected, deselect
+            selectionObj.SetActive(false);
+            selectedHeroIds.Remove(heroId);
+        }
+        else
+        {
+            //Clicked on a hero that is not yet selected
+
+            //If space left
+            if (selectedHeroIds.Count >= 3)
+                return;
+
+            //select hero
+            selectedHeroIds.Add(heroId);
+            selectionObj.SetActive(true);
+        }
+
+        if (selectedHeroIds.Count >= 3)
+        {
+            SendHeroSelectionToServer(selectedHeroIds);
+            readyButtonHighlight.SetActive(true);
+        }
+        else
+        {
+            readyButtonHighlight.SetActive(false);
+        }
     }
 
     [Command]
-    public void SendHeroSelectionToServer(int heroId)
+    public void SendHeroSelectionToServer(List<int> heroIds)
     {
-        HeroObject newHero = selectableHeroes[heroId];
-        selectedHero = newHero;
-
-        playerLobbyDetails.SetData(newHero);
-
-        SetHero(heroId);
+        Debug.Log("sending arr to server: " + heroIds);
+        playerLobbyDetails.SetData(heroIds);
     }
 
-    //called by server to load other player's selection
-    [ClientRpc]
+    //Loads clicked on hero's name, image, and bio
     public void SetHero(int heroId)
     {
         HeroObject newHero = selectableHeroes[heroId];
-        selectedHero = newHero;
 
-        playerLobbyDetails.SetData(newHero);
-
-        selectedHero = playerLobbyDetails.GetHeroObj;
-        selectedHeroNameText.text = playerLobbyDetails.GetHeroObj.name;
-        selectedHeroImage.sprite = playerLobbyDetails.GetHeroObj.HeroSprite;
-    }
-
-    [Server]
-    public void LoadDataFromServer()
-    {
-        SetHero(selectedHero.Id);
+        selectedHeroNameText.text = newHero.name;
+        selectedHeroImage.sprite = newHero.HeroSprite;
+        bioText.text = newHero.BioText;
     }
 
     public void ReadyClicked()
     {
+        if (isReady)
+            return;
+
         if (!isLocalPlayer)
             return;
 
-        if ((!isReady) && (selectedHero == null))
+        if (selectedHeroIds.Count < 3)
             return;
 
-        isReady = !isReady;
+        isReady = true;
 
-        SendReadyToServer(playerNum, isReady);
+        SendReadyToServer(playerNum, true);
 
         SetReadyVisuals();
     }
 
     [Command]
-    public void SendReadyToServer(int num, bool ready)
+    public void SendReadyToServer(int pNum, bool ready)
     {
-        networkManager.SetReady(num, ready);
-        LoadReadyStatusFromServer(ready);
-    }
-
-    [ClientRpc]
-    public void LoadReadyStatusFromServer(bool newIsReady)
-    {
-        isReady = newIsReady;
-        SetReadyVisuals();
+        networkManager.SetReady(pNum, true, playerLobbyDetails.HeroIds);
+        networkManager.LoadReadyVisuals(pNum, true);
     }
 
     public void SetReadyVisuals()
@@ -142,7 +175,28 @@ public class PlayerControllerHeroSelect : NetworkBehaviour
         else
         {
             readyButtonImage.color = Color.white;
-            readyButtonText.text = "Click to Ready Up";
+            readyButtonText.text = "Ready?";
+        }
+    }
+
+    [ClientRpc]
+    public void LoadEnemyReadyVisuals(int pNum, bool enemyReady)
+    {
+        Debug.Log("player num " + pNum + " is " + (enemyReady ? "" : "not ")+ " ready");
+
+
+        if (playerNum == pNum)
+            return;
+
+        if (enemyReady)
+        {
+            enemyReadyButtonImage.color = Color.green;
+            enemyReadyButtonText.text = "Opponent is Ready!";
+        }
+        else
+        {
+            enemyReadyButtonImage.color = Color.white;
+            enemyReadyButtonText.text = "Opponent Not Ready";
         }
     }
 }

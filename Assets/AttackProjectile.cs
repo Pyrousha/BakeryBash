@@ -6,6 +6,7 @@ public class AttackProjectile : MonoBehaviour
 {
     [SerializeField] private MeshRenderer rend;
     [SerializeField] private GameObject particleChild;
+    [SerializeField] private SpriteRenderer spriteRend;
 
     Vector3 startingPosition;
     Vector3 targetPosition;
@@ -14,7 +15,12 @@ public class AttackProjectile : MonoBehaviour
     float timer = 0f;
     bool moving = false;
 
-    public void SetPositions(Vector3 startPos, Vector3 endPos)
+    public void SetSprite(Sprite newSprite)
+    {
+        spriteRend.sprite = newSprite;
+    }
+
+    public void SetPositionsAndGo(Vector3 startPos, Vector3 endPos)
     {
         transform.position = startPos;
 

@@ -10,6 +10,7 @@ public class CombatManager : NetworkBehaviour
     [SerializeField] private int playerTurn = 1;
     public int PlayerTurn => playerTurn;
     private int localPlayerNum;
+    public int LocalPlayerNum => localPlayerNum;
     public void SetLocalPlayerNum(int newNum)
     {
         localPlayerNum = newNum;
@@ -25,6 +26,12 @@ public class CombatManager : NetworkBehaviour
     {
         return ingredients[id];
     }
+
+    [SerializeField] private Sprite attackSpriteIcon;
+    [SerializeField] private Sprite interactSpriteIcon;
+
+    public Sprite AttackSpriteIcon => attackSpriteIcon;
+    public Sprite InteractSpriteIcon => interactSpriteIcon;
 
     [Header("References")]
     [SerializeField] private PlayerControllerCombat p1Controller;
@@ -43,6 +50,11 @@ public class CombatManager : NetworkBehaviour
     public List<CombatHero> GetP1Ingredients => p1Ingredients;
     public List<CombatHero> GetP2Ingredients => p2Ingredients;
 
+    [SerializeField] private List<CombatHero> p1MapObjs;
+    [SerializeField] private List<CombatHero> p2MapObjs;
+    public List<CombatHero> GetP1MapObjs => p1MapObjs;
+    public List<CombatHero> GetP2MapObjs => p2MapObjs;
+
     [SerializeField] private Transform tokenSpriteParent;
     [SerializeField] private GameObject endTurnButton;
 
@@ -58,6 +70,7 @@ public class CombatManager : NetworkBehaviour
     [Header("Prefabs")]
     [SerializeField] private GameObject blueAttackProjectile;
     [SerializeField] private GameObject redAttackProjectile;
+    [SerializeField] private GameObject interactProjectile;
 
     [Header("Colors")]
     [SerializeField] private Color teamColor;
@@ -80,10 +93,16 @@ public class CombatManager : NetworkBehaviour
         GetCurrPlayerController().TurnStartedServer();
 
         //Try to shoot at all enemies that are in the new player's tower range
-        if(playerTurn == 1)
+        if (playerTurn == 1)
+        {
+            TryRespawnHeroes(p1Heroes);
             FireTowers(p1Towers);
+        }
         else
+        {
+            TryRespawnHeroes(p2Heroes);
             FireTowers(p2Towers);
+        }
     }
 
     [ClientRpc]
@@ -98,6 +117,18 @@ public class CombatManager : NetworkBehaviour
     public PlayerControllerCombat GetCurrPlayerController()
     {
         if (playerTurn == 1)
+        {
+            return p1Controller;
+        }
+        else
+        {
+            return p2Controller;
+        }
+    }
+
+    public PlayerControllerCombat GetController(int playerNum)
+    {
+        if (playerNum == 1)
         {
             return p1Controller;
         }
@@ -201,6 +232,15 @@ public class CombatManager : NetworkBehaviour
     }
 
     [Server]
+    public void TryRespawnHeroes(List<CombatHero> heroes)
+    {
+        for (int i = 0; i < heroes.Count; i++)
+        {
+            heroes[i].TryRespawn();
+        }
+    }
+
+    [Server]
     public void FireTowers(List<CombatHero> towers)
     {
         for(int i=0; i< towers.Count; i++)
@@ -239,7 +279,16 @@ public class CombatManager : NetworkBehaviour
             projectile = Instantiate(redAttackProjectile).GetComponent<AttackProjectile>();
         }
 
-        projectile.SetPositions(startPos, endpos);
+        projectile.SetPositionsAndGo(startPos, endpos);
+    }
+
+    [Client]
+    public void SpawnInteractProjectile(int id, Vector3 startPos, Vector3 endpos)
+    {
+        AttackProjectile projectile = Instantiate(interactProjectile).GetComponent<AttackProjectile>();
+
+        projectile.SetSprite(GetIngredientWithId(id).GetSprite(true));
+        projectile.SetPositionsAndGo(startPos, endpos);
     }
 
 }

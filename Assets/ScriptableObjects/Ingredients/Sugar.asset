@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: Sugar
   m_EditorClassIdentifier: 
   id: 3
-  allySprite: {fileID: -3566493870488458173, guid: 2ea71fff4129f364c8181a039add12db,
+  allySprite: {fileID: -3161459622353745449, guid: 6b260670f6bf9df418cc8e4de08b0d9d,
     type: 3}
-  enemySprite: {fileID: 8474640244576014681, guid: 2ea71fff4129f364c8181a039add12db,
+  enemySprite: {fileID: 3442021122956461364, guid: 6b260670f6bf9df418cc8e4de08b0d9d,
     type: 3}
   inventorySprite: {fileID: 0}

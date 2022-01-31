@@ -8,6 +8,7 @@ public class SelectableHeroUIButton : MonoBehaviour
     [SerializeField] private PlayerControllerHeroSelect player;
 
     [SerializeField] private HeroObject heroObj;
+    [SerializeField] private GameObject selectionObj;
 
     private void Start()
     {
@@ -18,6 +19,6 @@ public class SelectableHeroUIButton : MonoBehaviour
 
     public void OnClicked()
     {
-        player.SelectHero(heroObj.Id);
+        player.SelectHero(heroObj.Id, selectionObj);
     }
 }

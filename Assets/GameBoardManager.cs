@@ -160,6 +160,12 @@ public class GameBoardManager : MonoBehaviour
                             addToList = true;
                         break;
                     }
+                case BoardEdge.EdgeTypeEnum.respawn:
+                    {
+                        if (currVertex.IsRespawnVertex)
+                            addToList = true;
+                        break;
+                    }
             }
 
             if (addToList)

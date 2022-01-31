@@ -279,7 +279,7 @@ RectTransform:
   m_GameObject: {fileID: 3763739195441057361}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.01, y: 0.01, z: 0.01}
+  m_LocalScale: {x: 0.015, y: 0.015, z: 0.015}
   m_Children:
   - {fileID: 4900257886118969724}
   m_Father: {fileID: 1716312783}
@@ -287,7 +287,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 1.03}
   m_SizeDelta: {x: 75, y: 25.6}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &973641412223704659
@@ -368,14 +368,14 @@ RectTransform:
   m_GameObject: {fileID: 3983903724510421051}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.001, y: 0.001, z: 0.001}
+  m_LocalScale: {x: 0.0015, y: 0.0015, z: 0.0015}
   m_Children: []
   m_Father: {fileID: 1716312783}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 1.0299988}
   m_SizeDelta: {x: 160, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &2903323725049630145
@@ -535,15 +535,15 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5261713881294826922}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -0.05}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 0.25, y: 0.25, z: 1}
   m_Children: []
   m_Father: {fileID: 5261713882226379684}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 1.5999985}
   m_SizeDelta: {x: -30, y: -30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &5261713881294826921
@@ -593,7 +593,8 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 21300000, guid: e78c0f484b3dfc4498c5e8bf0f63e194, type: 3}
+  m_Sprite: {fileID: -3480435780424954912, guid: 6b260670f6bf9df418cc8e4de08b0d9d,
+    type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -670,12 +671,22 @@ MonoBehaviour:
   syncInterval: 0.1
   isMine: 0
   heroObj: {fileID: 11400000, guid: 40a29d108079d4c4e833facef587ba55, type: 2}
+  allySprite: {fileID: -3480435780424954912, guid: 6b260670f6bf9df418cc8e4de08b0d9d,
+    type: 3}
+  enemySprite: {fileID: -3655860826038216800, guid: 6b260670f6bf9df418cc8e4de08b0d9d,
+    type: 3}
+  ingredientType: {fileID: 0}
+  inventorySprites: []
   heroSpriteRend: {fileID: 1466468740}
   nameText: {fileID: 2124307582}
   hpSlider: {fileID: 973641412223704659}
   hpText: {fileID: 530086827685306365}
   bgSpriteRend: {fileID: 1636446718}
-  isTower: 1
+  disableAllyHitbox: 0
+  heroType: 1
+  isCore: 0
+  isInvincible: 0
+  nextTower: {fileID: 0}
   startingVertexId: -1
 --- !u!114 &9147159563151215485
 MonoBehaviour:

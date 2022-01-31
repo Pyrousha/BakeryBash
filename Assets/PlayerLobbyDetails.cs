@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Mirror;
+using System;
 
 public class PlayerLobbyDetails : NetworkBehaviour
 {
@@ -11,8 +12,8 @@ public class PlayerLobbyDetails : NetworkBehaviour
     private bool isMe = false;
     public bool GetIsMe => isMe;
 
-    [SerializeField] private HeroObject heroObj;
-    public HeroObject GetHeroObj => heroObj;
+    private List<int> heroIds;
+    public List<int> HeroIds => heroIds;
 
     [SerializeField] private NetworkManagerPlayerSelect networkManager;
     [SerializeField] private HeroObject[] selectableHeroes;
@@ -34,22 +35,28 @@ public class PlayerLobbyDetails : NetworkBehaviour
         isMe = newIsMe;
     }
 
-    public void SetData(HeroObject newHeroObj)
-    {
-        heroObj = newHeroObj;
-    }
-
     [Server]
-    public void LoadDataFromServer()
+    public void SetData(List<int> newHeroIds)
     {
-        SetHero(heroObj.Id);
+        heroIds = newHeroIds;
+        Debug.Log("sending list to client: " + newHeroIds);
+        SetDataClient(newHeroIds);
     }
 
-    //called by server to load other player's selection
     [ClientRpc]
-    public void SetHero(int heroId)
+    public void SetDataClient(List<int> newHeroIds)
     {
-        HeroObject newHero = selectableHeroes[heroId];
-        heroObj = newHero;
+        Debug.Log("list got! " + newHeroIds);
+        heroIds = newHeroIds;
+    }
+
+    public int GetChosenHeroIdByIndex(int index)
+    {
+        return heroIds[index];
+    }
+
+    public HeroObject GetHeroById(int id)
+    {
+        return selectableHeroes[id];
     }
 }

@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: Eggs
   m_EditorClassIdentifier: 
   id: 1
-  allySprite: {fileID: -4074711270985794095, guid: 2ea71fff4129f364c8181a039add12db,
+  allySprite: {fileID: 9078166726579549630, guid: 6b260670f6bf9df418cc8e4de08b0d9d,
     type: 3}
-  enemySprite: {fileID: 7641124845627605941, guid: 2ea71fff4129f364c8181a039add12db,
+  enemySprite: {fileID: -6188660553883493309, guid: 6b260670f6bf9df418cc8e4de08b0d9d,
     type: 3}
   inventorySprite: {fileID: 0}

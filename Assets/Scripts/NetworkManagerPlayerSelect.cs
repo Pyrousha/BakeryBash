@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Mirror;
+using System;
 
 public class NetworkManagerPlayerSelect : NetworkManager
 {
@@ -22,11 +23,14 @@ public class NetworkManagerPlayerSelect : NetworkManager
     [SerializeField] private LobbyCountdown lobbyCountdown;
     [SerializeField] private SlideTransition slideTransition;
 
-    //private HeroObject p1Hero;
-    //private HeroObject p2Hero;
-
     private bool p1Ready = false;
     private bool p2Ready = false;
+
+    private PlayerControllerHeroSelect p1Controller;
+    private PlayerControllerHeroSelect p2Controller;
+
+    private List<int> p1heroIds;
+    private List<int> p2heroIds;
 
     /*
     [Server]
@@ -65,6 +69,16 @@ public class NetworkManagerPlayerSelect : NetworkManager
         NetworkServer.AddPlayerForConnection(conn, player);
     }
 
+    public void SetP1Controller(PlayerControllerHeroSelect playerControllerHeroSelect)
+    {
+        p1Controller = playerControllerHeroSelect;
+    }
+
+    public void SetP2Controller(PlayerControllerHeroSelect playerControllerHeroSelect)
+    {
+        p2Controller = playerControllerHeroSelect;
+    }
+
     [Server]
     public void LoadCombatScene()
     {
@@ -81,18 +95,22 @@ public class NetworkManagerPlayerSelect : NetworkManager
     }
 
     [Server]
-    public void SetReady(int playerNum, bool isReady)
+    public void SetReady(int playerNum, bool isReady, List<int> heroIds)
     {
         switch (playerNum)
         {
             case 1:
                 {
-                    p1Ready = isReady;
+                    p1Ready = true;
+                    p1heroIds = heroIds;
+                    P1LobbyDetails.SetDataClient(heroIds);
                     break;
                 }
             case 2:
                 {
-                    p2Ready = isReady;
+                    p2Ready = true;
+                    p2heroIds = heroIds;
+                    P2LobbyDetails.SetDataClient(heroIds);
                     break;
                 }
             default:
@@ -103,6 +121,9 @@ public class NetworkManagerPlayerSelect : NetworkManager
         }
         if (p1Ready && p2Ready)
         {
+            P1LobbyDetails.SetDataClient(p1heroIds);
+            P2LobbyDetails.SetDataClient(p2heroIds);
+
             lobbyCountdown.StartCountdown();
         }
     }
@@ -115,15 +136,7 @@ public class NetworkManagerPlayerSelect : NetworkManager
     [Server]
     public void SlideUpDone()
     {
-        //VerifyHeroSelections();
         LoadCombatScene();
-    }
-
-
-    public void VerifyHeroSelections()
-    {
-        P1LobbyDetails.LoadDataFromServer();
-        P2LobbyDetails.LoadDataFromServer();
     }
 
     public override void OnServerSceneChanged(string sceneName)
@@ -138,5 +151,11 @@ public class NetworkManagerPlayerSelect : NetworkManager
         slideTransition.StartSlideDown();
 
         base.OnClientSceneChanged(conn);
+    }
+
+    public void LoadReadyVisuals(int pNum, bool v)
+    {
+        p1Controller.LoadEnemyReadyVisuals(pNum, true); //Load "enemy is ready" on opponent's screen
+        p2Controller.LoadEnemyReadyVisuals(pNum, true); //Load "enemy is ready" on opponent's screen
     }
 }

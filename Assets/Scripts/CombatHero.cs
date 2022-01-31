@@ -24,16 +24,34 @@ public class CombatHero : NetworkBehaviour
     private bool canWalkOverSpecialTerrain;
     public bool CanWalkOverSpecialTerrain => canWalkOverSpecialTerrain;
 
+    [Header("Data")]
+    [SerializeField] private Sprite allySprite;
+    [SerializeField] private Sprite enemySprite;
+
     [Header("Ingredient Stuff")]
     [SerializeField] private IngredientObject ingredientType;
-    [SerializeField] private bool isIngredient = false;
+    //[SerializeField] private bool isIngredient = false;
     [SerializeField] private SpriteRenderer[] inventorySprites;
-    public bool IsIngredient => isIngredient;
+    //public bool IsIngredient => heroType == HeroTypeEnum.Ingredient;
     private List<IngredientObject> inventory;
-    public List<IngredientObject> Inventory => inventory;
+    //public List<IngredientObject> Inventory => inventory;
     public bool IsInventoryFull()
     {
         return (inventory.Count >= 5);
+    }
+    public bool IsInventoryEmpty()
+    {
+        return (inventory.Count == 0);
+    }
+    public IngredientObject PopIngredient()
+    {
+        Debug.Log("inv count: " + inventory.Count);
+        Debug.Log("inv[count-1] = inv[" + (inventory.Count - 1) + "] = ");
+        Debug.Log(inventory[inventory.Count - 1].name);
+
+        IngredientObject ingredient = inventory[inventory.Count - 1];
+        inventory.RemoveAt(inventory.Count - 1);
+        return (ingredient);
     }
 
     [Header("References")]
@@ -48,11 +66,25 @@ public class CombatHero : NetworkBehaviour
 
     [SerializeField] private SpriteRenderer bgSpriteRend;
 
+    //[Header("Parametes and such")]
+    [Serializable] public enum HeroTypeEnum
+    {
+        Hero,
+        Tower,
+        Ingredient,
+        Deposit
+    }
+    public HeroTypeEnum type => heroType;
+
     [Header("Parametes and such")]
-    [SerializeField] private bool isTower = false;
+    [SerializeField] private bool disableAllyHitbox = false;
+    [SerializeField] private HeroTypeEnum heroType;
+
+    //[SerializeField] private bool isTower = false;
     [SerializeField] private bool isCore = false;
     [SerializeField] private bool isInvincible = false;
     public bool IsInvincible => isInvincible;
+    private bool isDead = false;
     [SerializeField] private CombatHero nextTower;
     private List<BoardVertex> trappedVertices;
 
@@ -83,31 +115,29 @@ public class CombatHero : NetworkBehaviour
             }
         }
 
-        if (isTower)
+        switch(heroType)
         {
-            if (isInvincible)
-            {
-                hpSlider.gameObject.SetActive(false);
-                hpText.gameObject.SetActive(false);
-            }
+            case HeroTypeEnum.Hero:
+                {
+                    inventory = new List<IngredientObject>();
+                    break;
+                }
 
-            trappedVertices = currVertex.AdjacentVertices;
-            foreach(BoardVertex vert in trappedVertices)
-            {
-                vert.SetTower(this);
-            }
-        }
-        else
-        {
-            if(isIngredient)
-            {
+            case HeroTypeEnum.Tower:
+                {
+                    if (isInvincible)
+                    {
+                        hpSlider.gameObject.SetActive(false);
+                        hpText.gameObject.SetActive(false);
+                    }
 
-            }
-            else
-            {
-                //is a hero
-                inventory = new List<IngredientObject>();
-            }
+                    trappedVertices = currVertex.AdjacentVertices;
+                    foreach (BoardVertex vert in trappedVertices)
+                    {
+                        vert.SetTower(this);
+                    }
+                    break;
+                }
         }
 
         doneStart = true;
@@ -120,14 +150,15 @@ public class CombatHero : NetworkBehaviour
 
         isMine = newIsMine;
 
-        if (isIngredient)
+        if (heroType == HeroTypeEnum.Ingredient)
         {
-            heroSpriteRend.sprite = ingredientType.GetSprite(newIsMine);
-
             isMine = false; //let anyone attack this
+        }
 
-            enemyPlayerController = newPlayer;
-            return;
+        if (heroType == HeroTypeEnum.Deposit)
+        {   
+            //Deposit on player's side of the map, need to attack local side instead of enemy's
+            isMine = !isMine;
         }
 
         //Set this unit color based on if it is owned by the player
@@ -144,10 +175,44 @@ public class CombatHero : NetworkBehaviour
             enemyPlayerController = newPlayer;
         }
 
-        if (isTower)
-            heroSpriteRend.color = colToUse;
-        else
-            bgSpriteRend.color = colToUse;
+        switch (heroType)
+        {
+            case HeroTypeEnum.Hero:
+                {
+                    bgSpriteRend.color = colToUse;
+                    break;
+                }
+            case HeroTypeEnum.Ingredient:
+                {
+                    //Set sprite color based on if on ally or enemy side
+                    heroSpriteRend.sprite = ingredientType.GetSprite(newIsMine);
+                    break;
+                }
+            case HeroTypeEnum.Tower:
+                {
+                    if (isCore && isMine && disableAllyHitbox)
+                        GetComponent<BoxCollider2D>().enabled = false;
+
+                    if (isMine) //ally side
+                        heroSpriteRend.sprite = allySprite;
+                    else
+                        heroSpriteRend.sprite = enemySprite;
+                    break;
+                }
+            case HeroTypeEnum.Deposit:
+                {
+                    if (disableAllyHitbox && isMine) //local player can't attack this (enemy side deposit, remove hitbox to click on core)
+                    {
+                        GetComponent<BoxCollider2D>().enabled = false;
+                    }
+
+                    if (newIsMine) //ally side
+                        heroSpriteRend.sprite = allySprite;
+                    else
+                        heroSpriteRend.sprite = enemySprite;
+                    break;
+                }
+        }
     }
 
     public void SetHeroObj(HeroObject newHeroObj)
@@ -172,10 +237,13 @@ public class CombatHero : NetworkBehaviour
 
     public void OnMouseDown()
     {
+        if (isDead)
+            return;
+
         if (isMine) 
         {
-            //player should not be able to click their own towers to attack
-            if (!isTower)
+            //player should not be able to click their own towers or ovens to attack
+            if (heroType == HeroTypeEnum.Hero)
                 playerController.OnHeroClicked(this, true);
         }
         else
@@ -186,7 +254,7 @@ public class CombatHero : NetworkBehaviour
     [ClientRpc]
     public void OnTurnStartTower()
     {
-        if (!isTower)
+        if (heroType != HeroTypeEnum.Tower)
             return; //this shouldn't be called, but just in case
 
         if (!isMine)
@@ -194,6 +262,25 @@ public class CombatHero : NetworkBehaviour
 
         if(gameObject.activeSelf)
             playerController.TryShootTower(this);
+    }
+
+    [ClientRpc]
+    public void TryRespawn()
+    {
+        if(isDead && heroType == HeroTypeEnum.Hero)
+        {
+            hp += Mathf.CeilToInt(((float)maxHp) / 2f);
+            if(hp >= maxHp)
+            {
+                hp = maxHp;
+                //healed enough to respawn
+                isInvincible = false;
+                isDead = false;
+                heroSpriteRend.enabled = true;
+            }
+
+            UpdateHPBar();
+        }
     }
        
     
@@ -208,34 +295,49 @@ public class CombatHero : NetworkBehaviour
     }
 
     [Command(requiresAuthority = false)]
-    public void TakeDamageServer(int dmg, Vector3 attackerPos)
+    public void TakeDamageServer(int dmg, Vector3 attackerPos, Vector3 targetPos)
     {
-        if(dmg <= 0)
+        switch(heroType)
         {
-            Debug.LogError("Attempting to deal " + dmg.ToString() + " damage to hero: " + heroObj.name);
-            return;
+            case HeroTypeEnum.Ingredient:
+                {
+                    TryAddIngredientClient(attackerPos, targetPos, ingredientType.Id);
+                    break;
+                }
+
+            case HeroTypeEnum.Deposit:
+                {
+                    TryTakeIngredientClient(attackerPos, targetPos);
+                    break;
+                }
+            
+            default:
+                {
+                    //Hero or tower, process damage
+
+                    if (dmg <= 0)
+                    {
+                        Debug.LogError("Attempting to deal " + dmg.ToString() + " damage to hero: " + heroObj.name);
+                        return;
+                    }
+
+                    hp = Mathf.Max(0, hp - dmg);
+
+                    UpdateHPClient(hp, attackerPos, targetPos);
+
+                    if (hp <= 0)
+                        HeroKilledServer();
+                    break;
+                }
         }
-
-        if(isIngredient)
-        {
-            TryAddIngredientClient(attackerPos, ingredientType.Id);
-            return;
-        }
-
-        hp = Mathf.Max(0, hp - dmg);
-
-        UpdateHPClient(hp, attackerPos);
-
-        if (hp <= 0)
-            HeroKilledServer();
     }
 
     [ClientRpc]
-    public void TryAddIngredientClient(Vector3 attackerPos, int ingredientId)
+    public void TryAddIngredientClient(Vector3 attackerPos, Vector3 targetPos, int ingredientId)
     {
         Vector3 dir = new Vector3(0, 0, 1);
-        RaycastHit2D[] hitArr = Physics2D.RaycastAll(attackerPos - new Vector3(0, 0, 0.5f), dir, 2);
-        Debug.DrawRay(attackerPos - new Vector3(0, 0, 1), dir, Color.red, 10f);
+        RaycastHit2D[] hitArr = Physics2D.RaycastAll(targetPos - new Vector3(0, 0, 0.5f), dir, 2);
+        Debug.DrawRay(targetPos - new Vector3(0, 0, 1), dir, Color.red, 10f);
 
         Debug.Log("debugRay");
 
@@ -245,6 +347,8 @@ public class CombatHero : NetworkBehaviour
             if (tempHero != null)
             {
                 tempHero.AddIngredientToInventory(combatManager.GetIngredientWithId(ingredientId));
+
+                combatManager.SpawnInteractProjectile(ingredientId, attackerPos, targetPos);
                 return;
             }
         }
@@ -264,6 +368,29 @@ public class CombatHero : NetworkBehaviour
         UpdateInventoryUI();
     }
 
+    [ClientRpc]
+    public void TryTakeIngredientClient(Vector3 attackerPos, Vector3 targetPos)
+    {
+        Vector3 dir = new Vector3(0, 0, 1);
+        RaycastHit2D[] hitArr = Physics2D.RaycastAll(attackerPos - new Vector3(0, 0, 0.5f), dir, 2);
+
+        foreach (RaycastHit2D hit in hitArr)
+        {
+            CombatHero tempHero = hit.collider.gameObject.GetComponent<CombatHero>();
+            if (tempHero != null)
+            {
+                IngredientObject newIngredient = tempHero.PopIngredient();
+                tempHero.UpdateInventoryUI();
+
+                if(enemyPlayerController != null) //only update local player inventory
+                    enemyPlayerController.AddIngredientToInventory(newIngredient);
+
+                combatManager.SpawnInteractProjectile(newIngredient.Id, attackerPos, targetPos);
+                return;
+            }
+        }
+    }
+
     public void UpdateInventoryUI()
     {
         for(int i=0; i<inventorySprites.Length;i++)
@@ -279,10 +406,10 @@ public class CombatHero : NetworkBehaviour
     }
 
     [ClientRpc]
-    public void UpdateHPClient(int newHp, Vector3 attackerPos)
+    public void UpdateHPClient(int newHp, Vector3 attackerPos, Vector3 targetPos)
     {
         //Play attack animation
-        combatManager.SpawnAttackProjectile(!isMine, attackerPos, transform.position);
+        combatManager.SpawnAttackProjectile(!isMine, attackerPos, targetPos);
 
         //Update HP values
         hp = newHp;
@@ -292,7 +419,8 @@ public class CombatHero : NetworkBehaviour
         if (hp <= 0)
             HeroKilledClient();
 
-        enemyPlayerController.TryReclickCurrHero();
+        if(enemyPlayerController != null)
+            enemyPlayerController.TryReclickCurrHero();
     }
 
     private void UpdateHPBar()
@@ -303,42 +431,59 @@ public class CombatHero : NetworkBehaviour
 
     public void HeroKilledServer()
     {
-        if(isTower)
+        switch(heroType)
         {
-            gameObject.SetActive(false);
-        }
-        else
-        {
-
+            case HeroTypeEnum.Tower:
+                {
+                    gameObject.SetActive(false);
+                    break;
+                }
         }
     }
 
     public void HeroKilledClient()
     {
-        if(isTower)
+        switch(heroType)
         {
-            if (currVertex != null)
-            {
-                FindObjectOfType<GameBoardManager>().RemoveVertex(currVertex);
-                if(nextTower!= null)
-                    nextTower.PrevTowerDestroyed();
-                else
+            case HeroTypeEnum.Hero:
                 {
-                    if (isCore)
-                        combatManager.EndGame(isMine);
+                    if (playerController == null)
+                    {
+                        int enemyPlayerNum = (combatManager.LocalPlayerNum == 1) ? 2 : 1;
+                        playerController = combatManager.GetController(enemyPlayerNum);
+                    }
+                    playerController.HeroKilled(this);
+
+                    playerController.ResetHeroMoveVisuals();
+
+                    heroSpriteRend.enabled = false;
+                    isInvincible = true;
+                    isDead = true;
+                    break;
                 }
-            }
 
-            foreach (BoardVertex vert in trappedVertices)
-            {
-                vert.SetTower(null);
-            }
+            case HeroTypeEnum.Tower:
+                {
+                    if (currVertex != null)
+                    {
+                        FindObjectOfType<GameBoardManager>().RemoveVertex(currVertex);
+                        if (nextTower != null)
+                            nextTower.PrevTowerDestroyed();
+                        else
+                        {
+                            if (isCore)
+                                combatManager.EndGame(isMine);
+                        }
+                    }
 
-            gameObject.SetActive(false);
-        }
-        else
-        {
+                    foreach (BoardVertex vert in trappedVertices)
+                    {
+                        vert.SetTower(null);
+                    }
 
+                    gameObject.SetActive(false);
+                    break;
+                }
         }
     }
 
@@ -362,6 +507,6 @@ public class CombatHero : NetworkBehaviour
 
         Debug.Log("stepped on trapped vertex!");
 
-        TakeDamageServer(tower.heroObj.BasicAttackDamage, tower.transform.position);
+        TakeDamageServer(tower.heroObj.BasicAttackDamage, tower.transform.position, transform.position);
     }
 }

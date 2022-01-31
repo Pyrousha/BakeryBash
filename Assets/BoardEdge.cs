@@ -19,7 +19,8 @@ public class BoardEdge : MonoBehaviour
     {
         normal, 
         unwalkable,
-        specialTerrain
+        specialTerrain,
+        respawn
     }
 
     [SerializeField] private EdgeTypeEnum edgeType = EdgeTypeEnum.normal;
@@ -78,6 +79,11 @@ public class BoardEdge : MonoBehaviour
             case EdgeTypeEnum.specialTerrain:
                 {
                     newColor = Color.green;
+                    break;
+                }
+            case EdgeTypeEnum.respawn:
+                {
+                    newColor = Color.grey;
                     break;
                 }
         }

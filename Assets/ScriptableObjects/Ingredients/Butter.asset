@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: Butter
   m_EditorClassIdentifier: 
   id: 0
-  allySprite: {fileID: -4596230732992929682, guid: 2ea71fff4129f364c8181a039add12db,
+  allySprite: {fileID: 9048655534124098557, guid: 6b260670f6bf9df418cc8e4de08b0d9d,
     type: 3}
-  enemySprite: {fileID: 7781682652552636025, guid: 2ea71fff4129f364c8181a039add12db,
+  enemySprite: {fileID: -6992685607845985683, guid: 6b260670f6bf9df418cc8e4de08b0d9d,
     type: 3}
   inventorySprite: {fileID: 0}

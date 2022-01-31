@@ -251,6 +251,35 @@ PrefabInstance:
       propertyPath: networkManager
       value: 
       objectReference: {fileID: 1531846807}
+    - target: {fileID: 5306707050415175592, guid: f9c76a1b5e05d5f49a6edcc8ea153e81,
+        type: 3}
+      propertyPath: selectableHeroes.Array.size
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 5306707050415175592, guid: f9c76a1b5e05d5f49a6edcc8ea153e81,
+        type: 3}
+      propertyPath: selectableHeroes.Array.data[0]
+      value: 
+      objectReference: {fileID: 11400000, guid: c1fce5251cbb72e4ebbc5ce9cf38d4cf,
+        type: 2}
+    - target: {fileID: 5306707050415175592, guid: f9c76a1b5e05d5f49a6edcc8ea153e81,
+        type: 3}
+      propertyPath: selectableHeroes.Array.data[1]
+      value: 
+      objectReference: {fileID: 11400000, guid: 60b2e791a470b6d43a4b78c96e9f2a60,
+        type: 2}
+    - target: {fileID: 5306707050415175592, guid: f9c76a1b5e05d5f49a6edcc8ea153e81,
+        type: 3}
+      propertyPath: selectableHeroes.Array.data[2]
+      value: 
+      objectReference: {fileID: 11400000, guid: 795a1f30bf4edff458bbbf323da1d4ea,
+        type: 2}
+    - target: {fileID: 5306707050415175592, guid: f9c76a1b5e05d5f49a6edcc8ea153e81,
+        type: 3}
+      propertyPath: selectableHeroes.Array.data[3]
+      value: 
+      objectReference: {fileID: 11400000, guid: 0bb03a0b01ef4464aa46ce93ae57d26e,
+        type: 2}
     - target: {fileID: 5306707050415175593, guid: f9c76a1b5e05d5f49a6edcc8ea153e81,
         type: 3}
       propertyPath: m_RootOrder
@@ -633,7 +662,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 479.99997, y: 0}
+  m_AnchoredPosition: {x: 50923, y: 0}
   m_SizeDelta: {x: 940, y: 1060}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &955321580
@@ -1106,7 +1135,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -479.99985, y: 0}
+  m_AnchoredPosition: {x: -52864, y: 0}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &1404283028 stripped
@@ -1536,6 +1565,35 @@ PrefabInstance:
       propertyPath: networkManager
       value: 
       objectReference: {fileID: 1531846807}
+    - target: {fileID: 5306707050415175592, guid: f9c76a1b5e05d5f49a6edcc8ea153e81,
+        type: 3}
+      propertyPath: selectableHeroes.Array.size
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 5306707050415175592, guid: f9c76a1b5e05d5f49a6edcc8ea153e81,
+        type: 3}
+      propertyPath: selectableHeroes.Array.data[0]
+      value: 
+      objectReference: {fileID: 11400000, guid: c1fce5251cbb72e4ebbc5ce9cf38d4cf,
+        type: 2}
+    - target: {fileID: 5306707050415175592, guid: f9c76a1b5e05d5f49a6edcc8ea153e81,
+        type: 3}
+      propertyPath: selectableHeroes.Array.data[1]
+      value: 
+      objectReference: {fileID: 11400000, guid: 60b2e791a470b6d43a4b78c96e9f2a60,
+        type: 2}
+    - target: {fileID: 5306707050415175592, guid: f9c76a1b5e05d5f49a6edcc8ea153e81,
+        type: 3}
+      propertyPath: selectableHeroes.Array.data[2]
+      value: 
+      objectReference: {fileID: 11400000, guid: 795a1f30bf4edff458bbbf323da1d4ea,
+        type: 2}
+    - target: {fileID: 5306707050415175592, guid: f9c76a1b5e05d5f49a6edcc8ea153e81,
+        type: 3}
+      propertyPath: selectableHeroes.Array.data[3]
+      value: 
+      objectReference: {fileID: 11400000, guid: 0bb03a0b01ef4464aa46ce93ae57d26e,
+        type: 2}
     - target: {fileID: 5306707050415175593, guid: f9c76a1b5e05d5f49a6edcc8ea153e81,
         type: 3}
       propertyPath: m_RootOrder

@@ -22,4 +22,7 @@ public class HeroObject : ScriptableObject
 
     [SerializeField] private int maxHp;
     public int MaxHp => maxHp;
+
+    [SerializeField] private string bioText;
+    public string BioText => bioText;
 }

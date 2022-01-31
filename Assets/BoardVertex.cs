@@ -13,7 +13,11 @@ public class BoardVertex : NetworkBehaviour
     private SpriteRenderer spriteRenderer;
 
     [SerializeField] private GameObject reticleObj;
+    private Image reticleImg;
     [SerializeField] private Text indexDisplay;
+
+    [SerializeField] private bool isRespawnVertex = false;
+    public bool IsRespawnVertex => isRespawnVertex;
 
     public CombatHero combatHero { get; private set; }
     private CombatHero tower;
@@ -83,9 +87,13 @@ public class BoardVertex : NetworkBehaviour
         spriteRenderer.color = Color.white;
     }
 
-    public void SetReticleActive(bool newActive)
+    public void SetReticleActive(bool newActive, Sprite newSprite)
     {
         reticleObj.SetActive(newActive);
+        if (reticleImg == null)
+            reticleImg = reticleObj.GetComponent<Image>();
+
+        reticleImg.sprite = newSprite;
     }
 
     public void SetTower(CombatHero newTower)

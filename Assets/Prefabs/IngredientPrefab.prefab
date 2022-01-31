@@ -162,15 +162,15 @@ MonoBehaviour:
   isMine: 0
   heroObj: {fileID: 0}
   ingredientType: {fileID: 11400000, guid: 8c0586946e25d844fb629beaecd9d816, type: 2}
+  inventorySprites: []
   heroSpriteRend: {fileID: 1466468740}
   nameText: {fileID: 0}
   hpSlider: {fileID: 0}
   hpText: {fileID: 0}
   bgSpriteRend: {fileID: 1636446718}
-  isTower: 0
+  heroType: 2
   isCore: 0
-  isInvincible: 1
-  isIngredient: 1
+  isInvincible: 0
   nextTower: {fileID: 0}
   startingVertexId: -1
 --- !u!114 &9147159563151215485

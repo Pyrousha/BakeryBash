@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: ChoccyChips
   m_EditorClassIdentifier: 
   id: 4
-  allySprite: {fileID: -9028938477123893177, guid: 2ea71fff4129f364c8181a039add12db,
+  allySprite: {fileID: -7419419574290662591, guid: 6b260670f6bf9df418cc8e4de08b0d9d,
     type: 3}
-  enemySprite: {fileID: -3147275107796605358, guid: 2ea71fff4129f364c8181a039add12db,
+  enemySprite: {fileID: 8931134360749268768, guid: 6b260670f6bf9df418cc8e4de08b0d9d,
     type: 3}
   inventorySprite: {fileID: 0}
