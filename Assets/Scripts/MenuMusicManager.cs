@@ -44,6 +44,8 @@ class MenuMusicManager : MonoBehaviour
     FMOD.Studio.EVENT_CALLBACK beatCallback;
     FMOD.Studio.EventInstance musicInstance;
 
+    FMOD.Studio.Bus masterBus;
+
     void Start()
     {
         timelineInfo = new TimelineInfo();
@@ -61,6 +63,9 @@ class MenuMusicManager : MonoBehaviour
 
         musicInstance.setCallback(beatCallback, FMOD.Studio.EVENT_CALLBACK_TYPE.TIMELINE_BEAT | FMOD.Studio.EVENT_CALLBACK_TYPE.TIMELINE_MARKER);
         musicInstance.start();
+
+        
+        masterBus = FMODUnity.RuntimeManager.GetBus("bus:/");
     }
 
     void OnDestroy()
@@ -133,5 +138,14 @@ class MenuMusicManager : MonoBehaviour
                     break;
             }
         }
+    }
+
+    public void ChangeVolume(float volume) {
+        masterBus.setVolume(volume);
+    }
+
+    public float GetVolume() {
+        masterBus.getVolume(out float volume);
+        return volume;
     }
 }

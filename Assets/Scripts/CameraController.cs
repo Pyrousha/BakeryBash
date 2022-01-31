@@ -8,6 +8,8 @@ public class CameraController : MonoBehaviour
 
     [SerializeField] Vector3 editorStartPos;
     [SerializeField] Vector3 zoomOutPos;
+    [SerializeField] private float cameraMoveSpeed;
+
     private GameBoardManager.GameBoardStateEnum boardState;
 
     // Time to hardcode input keys like an actual code wizard
@@ -22,29 +24,29 @@ public class CameraController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(boardState == GameBoardManager.GameBoardStateEnum.mapEditor) {
+        if(boardState == GameBoardManager.GameBoardStateEnum.mapEditor || !InputManager.Instance.IsInMouseMode()) {
             if(Input.GetKey(KeyCode.W)) {
-                transform.position += new Vector3(0, 0.1f, 0);
+                transform.position += new Vector3(0, cameraMoveSpeed, 0);
             }
             if(Input.GetKey(KeyCode.S)) {
-                transform.position += new Vector3(0, -0.1f, 0);
+                transform.position += new Vector3(0, -cameraMoveSpeed, 0);
             }
             if(Input.GetKey(KeyCode.D)) {
-                transform.position += new Vector3(0.1f, 0, 0);
+                transform.position += new Vector3(cameraMoveSpeed, 0, 0);
             }
             if(Input.GetKey(KeyCode.A)) {
-                transform.position += new Vector3(-0.1f, 0, 0);
+                transform.position += new Vector3(-cameraMoveSpeed, 0, 0);
             }
-        } else {
-            if(Input.GetKeyDown(KeyCode.Space)) {
-                transform.position = zoomOutPos;
-            }
+        }
+        if(Input.GetKeyDown(KeyCode.Space)) {
+            transform.position = zoomOutPos;
         }
     }
 
     public void OnVertexClicked(BoardVertex vertex) {
-        //Debug.Log("Yo");
-        Vector3 vertexPos = vertex.gameObject.transform.position;
-        transform.position = new Vector3(vertexPos.x, vertexPos.y, vertexPos.z);
+        if(InputManager.Instance.IsInMouseMode()) {
+            Vector3 vertexPos = vertex.gameObject.transform.position;
+            transform.position = new Vector3(vertexPos.x, vertexPos.y, vertexPos.z);
+        }
     }
 }
