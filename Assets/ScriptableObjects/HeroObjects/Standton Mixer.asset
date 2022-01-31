@@ -12,10 +12,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1ffc77c08cb0d994e956d591e1539e70, type: 3}
   m_Name: Standton Mixer
   m_EditorClassIdentifier: 
+  selectName: Standton Mixer - Stand Mixer
   id: 2
   heroSprite: {fileID: 21300000, guid: 2d64782dca4d61a449e24d7d9553e6e1, type: 3}
   basicAttackRange: 1
   basicAttackDamage: 3
   canWalkOverSpecialTerrain: 0
   maxHp: 14
-  bioText: Bro my hand can spin SOOOO FAST! How cool is that?
+  bioText: "Through a tough upbringing in the baking soda mines, Stanton became a
+    strong figure in their community. After losing her arm in a mine collapse, she
+    became a worker\u2019s rights activist and now fights in the arena to earn money
+    to support her community. "

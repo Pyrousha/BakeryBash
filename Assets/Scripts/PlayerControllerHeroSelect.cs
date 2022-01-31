@@ -30,6 +30,8 @@ public class PlayerControllerHeroSelect : NetworkBehaviour
 
     private List<int> selectedHeroIds;
 
+    private CharacterSelectMusicManager musicManager;
+
     private void Start()
     {
         selectedHeroIds = new List<int>();
@@ -72,6 +74,8 @@ public class PlayerControllerHeroSelect : NetworkBehaviour
         if(isClient)
             CheckDestroySelf();
 
+        musicManager = FindObjectOfType<CharacterSelectMusicManager>();
+
         transform.localPosition = Vector3.zero;
 
         SetReadyVisuals();
@@ -112,6 +116,8 @@ public class PlayerControllerHeroSelect : NetworkBehaviour
             selectionObj.SetActive(true);
         }
 
+        musicManager.SetCharacterNumber(selectedHeroIds.Count);
+
         if (selectedHeroIds.Count >= 3)
         {
             SendHeroSelectionToServer(selectedHeroIds);
@@ -135,7 +141,7 @@ public class PlayerControllerHeroSelect : NetworkBehaviour
     {
         HeroObject newHero = selectableHeroes[heroId];
 
-        selectedHeroNameText.text = newHero.name;
+        selectedHeroNameText.text = newHero.SelectName;
         selectedHeroImage.sprite = newHero.HeroSprite;
         bioText.text = newHero.BioText;
     }
@@ -169,6 +175,7 @@ public class PlayerControllerHeroSelect : NetworkBehaviour
     {
         if (isReady)
         {
+            readyButtonHighlight.SetActive(false);
             readyButtonImage.color = Color.green;
             readyButtonText.text = "Ready!";
         }

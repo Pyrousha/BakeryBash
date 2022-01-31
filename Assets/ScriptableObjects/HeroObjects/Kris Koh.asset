@@ -12,10 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1ffc77c08cb0d994e956d591e1539e70, type: 3}
   m_Name: Kris Koh
   m_EditorClassIdentifier: 
+  selectName: Kris Koh - Cooking Spray
   id: 1
   heroSprite: {fileID: 21300000, guid: 2aa035bf22ebd3c46a9d997387f42098, type: 3}
   basicAttackRange: 1
   basicAttackDamage: 4
   canWalkOverSpecialTerrain: 0
   maxHp: 7
-  bioText: YOU'RE GONNA GET REKT, NEEEEEEEEEERD!
+  bioText: This little rascal is a 12-year-old thief, fire enthusiast, and graffiti
+    artist. Using his cooking spray paint, he coats the arena floor in slick olive
+    oil that can help his team and disrupt his enemies!

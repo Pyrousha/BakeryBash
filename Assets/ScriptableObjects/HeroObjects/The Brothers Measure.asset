@@ -12,10 +12,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1ffc77c08cb0d994e956d591e1539e70, type: 3}
   m_Name: The Brothers Measure
   m_EditorClassIdentifier: 
+  selectName: The Brothers Measure - Measuring Cups
   id: 3
   heroSprite: {fileID: 21300000, guid: e632ebe4ddca712499c0f3d1f060cf54, type: 3}
   basicAttackRange: 3
   basicAttackDamage: 1
   canWalkOverSpecialTerrain: 0
   maxHp: 12
-  bioText: Why have one lad when you can have THREEE!
+  bioText: 'Cup, Tablespoon, and Teaspoon have one reason for fighting in the arena:
+    to fund their dreams of becoming the next hip-hop boyband sensation!!! Using
+    their scoop, they launch helpful ingredients to their teammates and bash their
+    enemies into smithereens!'

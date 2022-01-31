@@ -5,6 +5,9 @@ using UnityEngine;
 [CreateAssetMenu(menuName = "ScriptableObjects/SelectableHeroObject")]
 public class HeroObject : ScriptableObject
 {
+    [SerializeField] private string selectName;
+    public string SelectName => selectName;
+
     [SerializeField] private int id;
     public int Id => id;
 

@@ -12,10 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1ffc77c08cb0d994e956d591e1539e70, type: 3}
   m_Name: Strawberella
   m_EditorClassIdentifier: 
+  selectName: Strawberella - Baking Tray
   id: 0
   heroSprite: {fileID: 21300000, guid: d781ff240bff5b9478183e3e73d1e03c, type: 3}
   basicAttackRange: 2
   basicAttackDamage: 2
   canWalkOverSpecialTerrain: 0
   maxHp: 10
-  bioText: I'm gonna turn those enemy gamers into roadkill!
+  bioText: After recently quitting her job as a waitress, Strawberella entered the
+    arena with her baking tray skateboard. She now dashes around the arena, dishing
+    out healing cupcakes to her allies and pain to her enemies!
