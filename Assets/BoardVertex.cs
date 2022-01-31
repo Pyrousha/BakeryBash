@@ -25,6 +25,9 @@ public class BoardVertex : NetworkBehaviour
     [SerializeField] private List<BoardVertex> adjacentVertices;
     public List<BoardVertex> AdjacentVertices => adjacentVertices;
 
+    private SpriteRenderer towerRangeIcon;
+    public SpriteRenderer TowerRangeIcon => towerRangeIcon;
+
     private void Start()
     {
         //boardManager = FindObjectOfType<GameBoardManager>();
@@ -107,6 +110,24 @@ public class BoardVertex : NetworkBehaviour
         if ((tower != null) && (tower.gameObject.activeSelf))
         {
             hero.SteppedOnTrappedVertex(tower);
+        }
+    }
+
+    public void SetTowerRangeIcon(SpriteRenderer newSprite, Color col)
+    {
+        if (towerRangeIcon != null)
+            return;
+
+        towerRangeIcon = newSprite;
+        towerRangeIcon.gameObject.transform.position = transform.position;
+        towerRangeIcon.color = col;
+    }
+
+    public void ReplaceTowerRangeIcon(Sprite newSprite)
+    {
+        if (towerRangeIcon != null)
+        {
+            towerRangeIcon.sprite = newSprite;
         }
     }
 }

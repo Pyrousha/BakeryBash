@@ -72,6 +72,9 @@ public class CombatManager : NetworkBehaviour
     [SerializeField] private GameObject redAttackProjectile;
     [SerializeField] private GameObject interactProjectile;
 
+    public Sprite circleReticleSprite;
+    public GameObject dotReticle;
+
     [Header("Colors")]
     [SerializeField] private Color teamColor;
     [SerializeField] private Color enemyColor;

@@ -66,6 +66,8 @@ public class CombatHero : NetworkBehaviour
 
     [SerializeField] private SpriteRenderer bgSpriteRend;
 
+    private List<SpriteRenderer> towerIconSprites;
+
     //[Header("Parametes and such")]
     [Serializable] public enum HeroTypeEnum
     {
@@ -197,6 +199,27 @@ public class CombatHero : NetworkBehaviour
                         heroSpriteRend.sprite = allySprite;
                     else
                         heroSpriteRend.sprite = enemySprite;
+
+                    towerIconSprites = new List<SpriteRenderer>();
+
+                    //Set tower range icons
+                    CombatHero tower = this;
+                    List<BoardVertex> tempValidAttackVertices = GraphHelper.BFS(tower.CurrVertex, tower.BasicAttackRange);
+                    foreach (BoardVertex vert in tempValidAttackVertices)
+                    {
+                        if(vert.TowerRangeIcon == null)
+                        {
+                            SpriteRenderer newIcon = Instantiate(combatManager.dotReticle).GetComponent<SpriteRenderer>();
+                            towerIconSprites.Add(newIcon);
+                            vert.SetTowerRangeIcon(newIcon, colToUse);
+                        }
+                    }
+
+                    foreach (BoardVertex vert in currVertex.AdjacentVertices)
+                    {
+                        vert.ReplaceTowerRangeIcon(combatManager.circleReticleSprite);
+                    }
+
                     break;
                 }
             case HeroTypeEnum.Deposit:
@@ -479,6 +502,11 @@ public class CombatHero : NetworkBehaviour
                     foreach (BoardVertex vert in trappedVertices)
                     {
                         vert.SetTower(null);
+                    }
+
+                    foreach (SpriteRenderer sprRend in towerIconSprites)
+                    {
+                        sprRend.gameObject.SetActive(false);
                     }
 
                     gameObject.SetActive(false);
