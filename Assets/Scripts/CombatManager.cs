@@ -256,6 +256,9 @@ public class CombatManager : NetworkBehaviour
     [Client]
     public void EndGame(bool isMine)
     {
+        p1Controller.SetInteractable(false);
+        p2Controller.SetInteractable(false);
+
         if(isMine)
         {
             //player's core destroyed, lose

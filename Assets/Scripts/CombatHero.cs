@@ -24,6 +24,8 @@ public class CombatHero : NetworkBehaviour
     private bool canWalkOverSpecialTerrain;
     public bool CanWalkOverSpecialTerrain => canWalkOverSpecialTerrain;
 
+    [SerializeField] private Text atkText;
+
     [Header("Data")]
     [SerializeField] private Sprite allySprite;
     [SerializeField] private Sprite enemySprite;
@@ -238,6 +240,24 @@ public class CombatHero : NetworkBehaviour
         }
     }
 
+    [Command(requiresAuthority =false)]
+    public void AddStatsServer(int atkA, int hpA)
+    {
+        AddStatsClient(atkA, hpA);
+    }
+
+    [ClientRpc]
+    public void AddStatsClient(int atkA, int hpA)
+    {
+        basicAttackDamage += atkA;
+        maxHp += hpA;
+        hp += hpA;
+
+        atkText.text = BasicAttackDamage.ToString();
+
+        UpdateHPBar();
+    }
+
     public void SetHeroObj(HeroObject newHeroObj)
     {
         heroObj = newHeroObj;
@@ -254,6 +274,9 @@ public class CombatHero : NetworkBehaviour
         canWalkOverSpecialTerrain = heroObj.CanWalkOverSpecialTerrain;
         maxHp = heroObj.MaxHp;
         hp = maxHp;
+
+        if (atkText != null)
+            atkText.text = BasicAttackDamage.ToString();
 
         UpdateHPBar();
     }

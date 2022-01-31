@@ -21,12 +21,24 @@ public class PlayerControllerCombat : NetworkBehaviour
     private int maxTokens = 15;
 
     private List<IngredientObject> ingredientInventory = new List<IngredientObject>();
+    public List<IngredientObject> Inventory => ingredientInventory;
     [SerializeField] private Transform inventoryParent;
     [SerializeField] private Sprite transparentSprite;
 
     private List<Image> inventoryImages;
 
     [SerializeField] private int[] respawnIndices;
+
+    private bool interactable = true;
+
+    [SerializeField] private List<BakingObjectButton> bakingObjs;
+
+    private ItemObject currItem = null;
+
+    [SerializeField] private GameObject bakingOverlay;
+
+    [SerializeField] private GameObject chooseHeroOverlay;
+    [SerializeField] private Image chosenItemImage;
 
     [Client]
     // Start is called before the first frame update
@@ -62,6 +74,11 @@ public class PlayerControllerCombat : NetworkBehaviour
         {
             SetHeroColors();
             combatManager.SetLocalPlayerNum(playerNum);
+
+            foreach(BakingObjectButton bobj in bakingObjs)
+            {
+                bobj.SetController(this);
+            }
         }
     }
 
@@ -183,9 +200,20 @@ public class PlayerControllerCombat : NetworkBehaviour
         }
     }
 
+    public void SetInteractable(bool newInteractable)
+    {
+        ResetHeroMoveVisuals();
+
+        interactable = newInteractable;
+    }
+
     [Client]
     public void OnHeroClicked(CombatHero newClickedHero, bool isMine)
     {
+        if ((interactable == false) && (currItem == null))
+            return;
+
+
         //Note: this is only called on the player's combatController
 
         Debug.Log("clicked on hero " + newClickedHero.gameObject.name);
@@ -198,6 +226,16 @@ public class PlayerControllerCombat : NetworkBehaviour
 
         if (isMine)
         {
+            ResetHeroMoveVisuals();
+
+            if (currItem != null)
+            {
+                newClickedHero.AddStatsServer(currItem.Atk, currItem.Hp);
+                chooseHeroOverlay.SetActive(false);
+                currItem = null;
+                interactable = true;
+            }
+
             //Clicked on one of their own heroes, highlight adjacent vertices
 
             selectedHero = newClickedHero;
@@ -294,6 +332,10 @@ public class PlayerControllerCombat : NetworkBehaviour
                                 if(selectedHero.IsInventoryEmpty() == false) //if(valid recipe)
                                 {
                                     enemyHero.TakeDamageServer(0, selectedHero.transform.position, newClickedHero.transform.position);
+
+                                    //depositing does not cost tokens
+                                    numCurrTokens += 1;
+                                    combatManager.UpdateTokenVisualCount(numCurrTokens);
                                 }
                                 else
                                 {
@@ -442,6 +484,25 @@ public class PlayerControllerCombat : NetworkBehaviour
 
         if(heroToMove.IsMine)
             TryReclickHero(heroToMove);
+    }
+
+    [Client]
+    public void TryBake(ItemObject item)
+    {
+        if(item.HasIngredientsInInventory(ingredientInventory))
+        {
+            ingredientInventory = item.GetNewInventory();
+
+            bakingOverlay.SetActive(false);
+            currItem = item;
+
+            SetInteractable(false);
+
+            chooseHeroOverlay.SetActive(true);
+            chosenItemImage.sprite = item.GetSprite;
+
+            UpdatePlayerInventoryUI();
+        }
     }
 
     [Client]
