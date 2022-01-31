@@ -8,15 +8,17 @@ public class UINumberBoxConnect : MonoBehaviour
 {
     public Slider volumeSlider;
     private TMP_InputField numberBox;
+    [SerializeField] private MenuMusicManager music;
 
     public void Start() {
-        volumeSlider.onValueChanged.AddListener (delegate {ValueChangeCheck();});
+        volumeSlider.onValueChanged.AddListener(delegate {ValueChangeCheck(); });
         numberBox = transform.GetComponent<TMP_InputField>();
-        ValueChangeCheck();
+        numberBox.text = (music.GetVolume() * 100).ToString();
     }
 
     public void ValueChangeCheck()
     {
-        numberBox.text = Mathf.Round(volumeSlider.value).ToString();
+        numberBox.text = volumeSlider.value.ToString();
+        music.ChangeVolume(volumeSlider.value / 100);
     }
 }
