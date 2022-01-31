@@ -24,7 +24,7 @@ public class CameraController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(boardState == GameBoardManager.GameBoardStateEnum.mapEditor || !InputManager.Instance.IsInMouseMode) {
+        if(boardState == GameBoardManager.GameBoardStateEnum.mapEditor || !InputManager.Instance.IsInMouseMode()) {
             if(Input.GetKey(KeyCode.W)) {
                 transform.position += new Vector3(0, cameraMoveSpeed, 0);
             }
@@ -44,7 +44,7 @@ public class CameraController : MonoBehaviour
     }
 
     public void OnVertexClicked(BoardVertex vertex) {
-        if(InputManager.Instance.IsInMouseMode) {
+        if(InputManager.Instance.IsInMouseMode()) {
             Vector3 vertexPos = vertex.gameObject.transform.position;
             transform.position = new Vector3(vertexPos.x, vertexPos.y, vertexPos.z);
         }
