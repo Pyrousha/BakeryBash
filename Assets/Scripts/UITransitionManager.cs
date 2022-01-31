@@ -29,6 +29,12 @@ public class UITransitionManager : MonoBehaviour
         [SerializeField] public bool includeAlpha;
         [SerializeField] public float alphaEnd;
         [SerializeField] public float alphaTime;
+
+        [Space(10)]
+
+        [SerializeField] public bool includeSetChildrenActive;
+        [SerializeField] public bool setChildrenActive;
+        [SerializeField] public float setActiveDelay;
     }
 
     [SerializeField] private TransitionInstance[] _transitionList;
@@ -40,6 +46,7 @@ public class UITransitionManager : MonoBehaviour
     }
 
     public void TriggerTransition(string TransitionName) {
+        Debug.Log("bruh");
         TransitionInstance transition = null;
         foreach(TransitionInstance i in _transitionList) {
             if (i.name == TransitionName) {
@@ -57,6 +64,18 @@ public class UITransitionManager : MonoBehaviour
         }
         if (transition.includeAlpha) {
             cGroup.DOFade(transition.alphaEnd, transition.alphaTime);
-        }   
+        }
+        if (transition.includeSetChildrenActive) {
+            DOVirtual.DelayedCall(transition.setActiveDelay, ()=> SetActiveCallback(transition.setChildrenActive));
+        }
+    }
+
+    public void SetActiveCallback(bool setActive) {
+        Transform[] children = transform.GetComponentsInChildren<Transform>(true);
+        foreach(Transform child in children) {
+            if (child.parent == transform) {
+                child.gameObject.SetActive(setActive);
+            }
+        }
     }
 }
