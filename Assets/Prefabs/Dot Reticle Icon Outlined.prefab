@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8953405300640602895}
   - component: {fileID: 1329115359535753859}
+  - component: {fileID: -1068882647930604214}
   m_Layer: 0
   m_Name: Dot Reticle Icon Outlined
   m_TagString: Untagged
@@ -81,3 +82,16 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!114 &-1068882647930604214
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4234611506443187779}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0f085bb790976cd40b4dba14ab21880b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  sprRend: {fileID: 1329115359535753859}

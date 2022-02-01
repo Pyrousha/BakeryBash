@@ -25,8 +25,8 @@ public class BoardVertex : NetworkBehaviour
     [SerializeField] private List<BoardVertex> adjacentVertices;
     public List<BoardVertex> AdjacentVertices => adjacentVertices;
 
-    private SpriteRenderer towerRangeIcon;
-    public SpriteRenderer TowerRangeIcon => towerRangeIcon;
+    //private SpriteRenderer towerRangeIcon;
+    //public SpriteRenderer TowerRangeIcon => towerRangeIcon;
 
     private void Start()
     {
@@ -104,6 +104,11 @@ public class BoardVertex : NetworkBehaviour
         tower = newTower;
     }
 
+    public void RemoveTower()
+    {
+        tower = null; //stepping on this vertex no longer causes hero to take damage
+    }
+
     //[Command (requiresAuthority = false)]
     public void OnSteppedOn(CombatHero hero)
     {
@@ -113,6 +118,7 @@ public class BoardVertex : NetworkBehaviour
         }
     }
 
+    /*
     public void SetTowerRangeIcon(SpriteRenderer newSprite, Color col)
     {
         if (towerRangeIcon != null)
@@ -129,5 +135,5 @@ public class BoardVertex : NetworkBehaviour
         {
             towerRangeIcon.sprite = newSprite;
         }
-    }
+    }*/
 }

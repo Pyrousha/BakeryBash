@@ -169,7 +169,11 @@ public class GameBoardManager : MonoBehaviour
             }
 
             if (addToList)
-                adjVertices.Add(vert);
+            {
+                //Character can normally move to this vertex, last step is to make sure this space is not already occupied
+                if (vert.combatHero == null)
+                    adjVertices.Add(vert);
+            }
         }
 
         return adjVertices;

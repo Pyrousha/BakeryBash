@@ -68,7 +68,7 @@ public class CombatHero : NetworkBehaviour
 
     [SerializeField] private SpriteRenderer bgSpriteRend;
 
-    private List<SpriteRenderer> towerIconSprites;
+    private List<DotReticle> towerDots;
 
     //[Header("Parametes and such")]
     [Serializable] public enum HeroTypeEnum
@@ -140,6 +140,9 @@ public class CombatHero : NetworkBehaviour
                     {
                         vert.SetTower(this);
                     }
+
+                    currVertex.GetComponent<SpriteRenderer>().enabled = false; //Make any vertices with towers invisible
+
                     break;
                 }
         }
@@ -202,24 +205,34 @@ public class CombatHero : NetworkBehaviour
                     else
                         heroSpriteRend.sprite = enemySprite;
 
-                    towerIconSprites = new List<SpriteRenderer>();
+                    towerDots = new List<DotReticle>();
 
                     //Set tower range icons
-                    CombatHero tower = this;
-                    List<BoardVertex> tempValidAttackVertices = GraphHelper.BFS(tower.CurrVertex, tower.BasicAttackRange);
-                    foreach (BoardVertex vert in tempValidAttackVertices)
+                    List<BoardVertex> tempValidAttackVertices = GraphHelper.BFS(currVertex, basicAttackRange);
+                    foreach (BoardVertex vert in tempValidAttackVertices) //all vertices in 2 spaces of tower
                     {
-                        if(vert.TowerRangeIcon == null)
+                        if ((vert.VertexId == currVertex.VertexId) || ((vert.combatHero != null) && (vert.combatHero.heroType == HeroTypeEnum.Deposit)))
                         {
-                            SpriteRenderer newIcon = Instantiate(combatManager.dotReticle).GetComponent<SpriteRenderer>();
-                            towerIconSprites.Add(newIcon);
-                            vert.SetTowerRangeIcon(newIcon, colToUse);
+                            continue;
                         }
+
+                        DotReticle newDot = Instantiate(combatManager.dotReticle).GetComponent<DotReticle>();
+                        newDot.SetVertex(vert);
+                        newDot.SetColor(colToUse);
+
+                        towerDots.Add(newDot);
                     }
 
+                    //Make all adjacent vertices of towers pointy
                     foreach (BoardVertex vert in currVertex.AdjacentVertices)
                     {
-                        vert.ReplaceTowerRangeIcon(combatManager.circleReticleSprite);
+                        foreach(DotReticle dot in towerDots)
+                        {
+                            if(dot.Vertex == vert)
+                            {
+                                dot.SprRend.sprite = combatManager.circleReticleSprite;
+                            }
+                        }
                     }
 
                     break;
@@ -432,9 +445,12 @@ public class CombatHero : NetworkBehaviour
                     enemyPlayerController.AddIngredientToInventory(newIngredient);
 
                 combatManager.SpawnInteractProjectile(newIngredient.Id, attackerPos, targetPos);
-                return;
+                break;
             }
         }
+
+        if (enemyPlayerController != null)
+            enemyPlayerController.TryReclickCurrHero();
     }
 
     public void UpdateInventoryUI()
@@ -524,12 +540,12 @@ public class CombatHero : NetworkBehaviour
 
                     foreach (BoardVertex vert in trappedVertices)
                     {
-                        vert.SetTower(null);
+                        vert.RemoveTower();
                     }
 
-                    foreach (SpriteRenderer sprRend in towerIconSprites)
+                    foreach (DotReticle dot in towerDots)
                     {
-                        sprRend.gameObject.SetActive(false);
+                        dot.gameObject.SetActive(false);
                     }
 
                     gameObject.SetActive(false);

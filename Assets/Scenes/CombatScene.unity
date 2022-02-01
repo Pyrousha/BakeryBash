@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0, g: 0.99999946, b: 0.99999946, a: 1}
+  m_IndirectSpecularColor: {r: 0.44657898, g: 0.4964133, b: 0.5748178, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -2071,7 +2071,7 @@ PrefabInstance:
     - target: {fileID: 4709252910695653306, guid: 57c2fb4d975f6f4448a5381106dbae7b,
         type: 3}
       propertyPath: m_RootOrder
-      value: 6
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 4709252910695653306, guid: 57c2fb4d975f6f4448a5381106dbae7b,
         type: 3}
@@ -3700,7 +3700,7 @@ MonoBehaviour:
     type: 3}
   boardEdgePrefab: {fileID: 7826806191669573225, guid: db0530010f10028418ca4138f2d67784,
     type: 3}
-  boardToLoadPrefab: {fileID: 699020306943543181, guid: c4453e69c8854a54cae27acd161104e8,
+  boardToLoadPrefab: {fileID: 6839240734375112707, guid: d7f61641907e7f949925a1f380502a04,
     type: 3}
 --- !u!61 &640453774
 BoxCollider2D:
@@ -4206,7 +4206,7 @@ GameObject:
   - component: {fileID: 771908118}
   - component: {fileID: 771908117}
   m_Layer: 0
-  m_Name: Ortho Cam
+  m_Name: Map Editor Cam
   m_TagString: MainCamera
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4219,10 +4219,11 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 771908115}
-  m_LocalRotation: {x: 0.2588191, y: 0, z: 0, w: 0.9659258}
-  m_LocalPosition: {x: 0, y: 10.2, z: 5.9}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children: []
+  m_Children:
+  - {fileID: 953182518}
   m_Father: {fileID: 629211772}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 30, y: 0, z: 0}
@@ -5811,7 +5812,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &953182515
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5884,8 +5885,8 @@ RectTransform:
   m_LocalScale: {x: 0, y: 0, z: 0}
   m_Children:
   - {fileID: 1436357736}
-  m_Father: {fileID: 0}
-  m_RootOrder: 11
+  m_Father: {fileID: 771908116}
+  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
@@ -7918,7 +7919,7 @@ PrefabInstance:
     - target: {fileID: 4709252910695653306, guid: 57c2fb4d975f6f4448a5381106dbae7b,
         type: 3}
       propertyPath: m_RootOrder
-      value: 5
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 4709252910695653306, guid: 57c2fb4d975f6f4448a5381106dbae7b,
         type: 3}
@@ -8071,7 +8072,7 @@ PrefabInstance:
     - target: {fileID: 4709252910695653306, guid: 57c2fb4d975f6f4448a5381106dbae7b,
         type: 3}
       propertyPath: m_RootOrder
-      value: 4
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 4709252910695653306, guid: 57c2fb4d975f6f4448a5381106dbae7b,
         type: 3}
@@ -9449,7 +9450,7 @@ PrefabInstance:
     - target: {fileID: 4709252910695653306, guid: 57c2fb4d975f6f4448a5381106dbae7b,
         type: 3}
       propertyPath: m_RootOrder
-      value: 3
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 4709252910695653306, guid: 57c2fb4d975f6f4448a5381106dbae7b,
         type: 3}
@@ -12857,6 +12858,35 @@ PrefabInstance:
       propertyPath: respawnIndices.Array.data[2]
       value: 282
       objectReference: {fileID: 0}
+    - target: {fileID: 399789587090026406, guid: a03bee527f2192040b72da59c4d52dce,
+        type: 3}
+      propertyPath: p2StartingInventory.Array.size
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 399789587090026406, guid: a03bee527f2192040b72da59c4d52dce,
+        type: 3}
+      propertyPath: p2StartingInventory.Array.data[0]
+      value: 
+      objectReference: {fileID: 11400000, guid: 73f056d0303d33846b03f8433fd06d45,
+        type: 2}
+    - target: {fileID: 399789587090026406, guid: a03bee527f2192040b72da59c4d52dce,
+        type: 3}
+      propertyPath: p2StartingInventory.Array.data[1]
+      value: 
+      objectReference: {fileID: 11400000, guid: 3e297831eb946aa488479cab1c6ab369,
+        type: 2}
+    - target: {fileID: 399789587090026406, guid: a03bee527f2192040b72da59c4d52dce,
+        type: 3}
+      propertyPath: p2StartingInventory.Array.data[2]
+      value: 
+      objectReference: {fileID: 11400000, guid: 670ee7a41728f2c4c8981910c7a27bbb,
+        type: 2}
+    - target: {fileID: 399789587090026406, guid: a03bee527f2192040b72da59c4d52dce,
+        type: 3}
+      propertyPath: p2StartingInventory.Array.data[3]
+      value: 
+      objectReference: {fileID: 11400000, guid: 8c0586946e25d844fb629beaecd9d816,
+        type: 2}
     - target: {fileID: 399789587090026407, guid: a03bee527f2192040b72da59c4d52dce,
         type: 3}
       propertyPath: m_Name
@@ -15661,7 +15691,7 @@ PrefabInstance:
     - target: {fileID: 4709252910695653306, guid: 57c2fb4d975f6f4448a5381106dbae7b,
         type: 3}
       propertyPath: m_RootOrder
-      value: 2
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 4709252910695653306, guid: 57c2fb4d975f6f4448a5381106dbae7b,
         type: 3}

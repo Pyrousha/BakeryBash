@@ -16,6 +16,7 @@ public class ItemObject : ScriptableObject
     [SerializeField] private List<IngredientObject> recipe;
     public List<IngredientObject> Recipe => recipe;
     private List<IngredientObject> tempInv;
+    private List<IngredientObject> missingIngredients;
 
 
     public bool HasIngredientsInInventory(List<IngredientObject> inventory)
@@ -23,15 +24,20 @@ public class ItemObject : ScriptableObject
         tempInv = null;
 
         List<IngredientObject> tempInventory = new List<IngredientObject>(inventory);
+        missingIngredients = new List<IngredientObject>();
 
-        for(int i=0; i<recipe.Count;i++)
+
+        for (int i = 0; i < recipe.Count; i++)
         {
             IngredientObject currIngredient = recipe[i];
-            if( tempInventory.Remove(currIngredient) == false)
+            if (tempInventory.Remove(currIngredient) == false)
             {
-                return false; // item not in inventory
+                missingIngredients.Add(currIngredient);
             }
         }
+
+        if (missingIngredients.Count > 0)
+            return false;
 
         //All items found, send new inventory
         tempInv = tempInventory;
@@ -41,11 +47,11 @@ public class ItemObject : ScriptableObject
 
     public List<IngredientObject> GetNewInventory()
     {
-        if (tempInv != null)
-        {
-            return tempInv;
-        }
-        else
-            return null;
+        return tempInv;
+    }
+
+    public List<IngredientObject> GetMissingIngredients()
+    {
+        return missingIngredients;
     }
 }

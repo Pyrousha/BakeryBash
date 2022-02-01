@@ -44,7 +44,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aa9d25d4b4b4db44eb9d951158378478, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  firstVertex: {fileID: 0}
+  secondVertex: {fileID: 0}
+  firstVertexID: 0
+  secondVertexID: 0
   lineRend: {fileID: 575481913396545509}
+  edgeType: 0
 --- !u!120 &575481913396545509
 LineRenderer:
   m_ObjectHideFlags: 0
@@ -83,7 +88,7 @@ LineRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 10
   m_Positions:
   - {x: 6.24, y: 0, z: 0}
   - {x: 0, y: 0, z: 1}

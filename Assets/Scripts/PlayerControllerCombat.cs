@@ -23,6 +23,9 @@ public class PlayerControllerCombat : NetworkBehaviour
 
     private List<IngredientObject> ingredientInventory = new List<IngredientObject>();
     public List<IngredientObject> Inventory => ingredientInventory;
+    
+    [SerializeField] private List<IngredientObject> p2StartingInventory;
+
     [SerializeField] private Transform inventoryParent;
     [SerializeField] private Sprite transparentSprite;
 
@@ -69,6 +72,12 @@ public class PlayerControllerCombat : NetworkBehaviour
         {
             playerLobbyDetails = GameObject.Find("P2LobbyDetails").GetComponent<PlayerLobbyDetails>();
             enemyLobbyDetails = GameObject.Find("P1LobbyDetails").GetComponent<PlayerLobbyDetails>();
+
+            if (playerLobbyDetails.isLocalPlayer)
+            {
+                ingredientInventory = p2StartingInventory;
+                UpdatePlayerInventoryUI();
+            }
         }
 
         if (playerLobbyDetails.isLocalPlayer)
@@ -235,6 +244,7 @@ public class PlayerControllerCombat : NetworkBehaviour
                 chooseHeroOverlay.SetActive(false);
                 currItem = null;
                 interactable = true;
+                return;
             }
 
             //Clicked on one of their own heroes, highlight adjacent vertices
@@ -287,7 +297,6 @@ public class PlayerControllerCombat : NetworkBehaviour
                         {
                             validAttackVertices.Add(vert); //Has ingredient to deposit
                             vert.SetReticleActive(true, combatManager.InteractSpriteIcon);
-
                         }
                     }
                 }
@@ -461,6 +470,8 @@ public class PlayerControllerCombat : NetworkBehaviour
 
         ResetHeroMoveVisuals();
 
+        bakingOverlay.SetActive(false);
+
         selectedHero = null;
 
         combatManager.DoneTurn();
@@ -492,39 +503,42 @@ public class PlayerControllerCombat : NetworkBehaviour
     {
         if(item.HasIngredientsInInventory(ingredientInventory))
         {
+            //Update inventory
             ingredientInventory = item.GetNewInventory();
+            UpdatePlayerInventoryUI();
 
+            //Close baking menu thingie
             bakingOverlay.SetActive(false);
-            currItem = item;
 
+            //Set the currently selected item
+            currItem = item;
+            
+            //Don't allow the player to move any of their heroes/attack/etc.
             SetInteractable(false);
 
+            //Show the overlay for "Who's hungry!"
             chooseHeroOverlay.SetActive(true);
             chosenItemImage.sprite = item.GetSprite;
-
-            UpdatePlayerInventoryUI();
         }
     }
 
     [Client]
-    internal void OpenBakeClicked()
+    public void OpenBakeClicked()
     {
-        if (isLocalPlayer == false)
+        if (playerLobbyDetails.isLocalPlayer == false)
             return;
 
         foreach(BakingObjectButton bakeObj in bakingObjs)
         {
-            ItemObject itemm = bakeObj.Item;
+            ItemObject item = bakeObj.Item;
 
-            Image child = bakeObj.transform.GetChild(0).GetComponent<Image>();
-
-            if (itemm.HasIngredientsInInventory(ingredientInventory))
+            if (item.HasIngredientsInInventory(ingredientInventory))
             {
-                child.color = new Color(230f / 255f, 230f / 255f, 230f / 255f);
+                bakeObj.SetVisualsFromInventory(item, true);
             }
             else
             {
-                child.color = Color.gray;
+                bakeObj.SetVisualsFromInventory(item, false);
             }
         }
     }
