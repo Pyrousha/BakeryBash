@@ -12,7 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 09ea86e09d585b048842a7df8127a2c9, type: 3}
   m_Name: Quiche
   m_EditorClassIdentifier: 
-  itemSprite: {fileID: 21300000, guid: ef7ff828dbfbcc941860905d4f70dbb2, type: 3}
+  itemSprite: {fileID: 1930429615007774493, guid: 3f8b0ad95a6bd50449fb2613b8721a25,
+    type: 3}
   atkBuff: 0
   hpBuff: 2
   recipe:

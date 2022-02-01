@@ -11,6 +11,7 @@ public class PlayerControllerCombat : NetworkBehaviour
     [SerializeField] private CombatManager combatManager;
     [SerializeField] private GameBoardManager boardManager;
     private PlayerLobbyDetails playerLobbyDetails;
+
     private PlayerLobbyDetails enemyLobbyDetails;
 
     private CombatHero selectedHero;
@@ -502,6 +503,29 @@ public class PlayerControllerCombat : NetworkBehaviour
             chosenItemImage.sprite = item.GetSprite;
 
             UpdatePlayerInventoryUI();
+        }
+    }
+
+    [Client]
+    internal void OpenBakeClicked()
+    {
+        if (isLocalPlayer == false)
+            return;
+
+        foreach(BakingObjectButton bakeObj in bakingObjs)
+        {
+            ItemObject itemm = bakeObj.Item;
+
+            Image child = bakeObj.transform.GetChild(0).GetComponent<Image>();
+
+            if (itemm.HasIngredientsInInventory(ingredientInventory))
+            {
+                child.color = new Color(230f / 255f, 230f / 255f, 230f / 255f);
+            }
+            else
+            {
+                child.color = Color.gray;
+            }
         }
     }
 

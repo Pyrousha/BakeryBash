@@ -7,6 +7,7 @@ using Mirror;
 public class BakingObjectButton : NetworkBehaviour
 {
     [SerializeField] private ItemObject item;
+    public ItemObject Item => item;
     [SerializeField] private Image itemImg;
     [SerializeField] private Text nameText;
     [SerializeField] private Text swordTextNum;

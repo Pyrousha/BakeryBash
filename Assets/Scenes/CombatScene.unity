@@ -3972,6 +3972,7 @@ MonoBehaviour:
   board: {fileID: 640453773}
   editorStartPos: {x: 0, y: 0, z: -40}
   zoomOutPos: {x: 0, y: -15, z: -20}
+  cameraMoveSpeed: 0
 --- !u!4 &713808440
 Transform:
   m_ObjectHideFlags: 0
@@ -4231,6 +4232,7 @@ MonoBehaviour:
   board: {fileID: 640453773}
   editorStartPos: {x: 0, y: 0, z: 0}
   zoomOutPos: {x: 0, y: 0, z: 0}
+  cameraMoveSpeed: 0
 --- !u!114 &771908119
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8776,6 +8778,7 @@ MonoBehaviour:
   board: {fileID: 640453773}
   editorStartPos: {x: 0, y: 0, z: 0}
   zoomOutPos: {x: 0, y: 0, z: 0}
+  cameraMoveSpeed: 0
 --- !u!114 &1314782123
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -10210,6 +10213,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   bakeOverlay: {fileID: 140918029}
+  p1: {fileID: 750212281}
+  p2: {fileID: 2008801801}
 --- !u!114 &1493013199
 MonoBehaviour:
   m_ObjectHideFlags: 0
