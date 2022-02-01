@@ -26,10 +26,10 @@ public class InputManager : MonoBehaviour
             Instance = this;
         }
         inputMode = PlayerPrefs.GetInt("inputMode", 0);
+        SetInputMode(1);
     }
 
     public void SetInputMode(int dropdownValue) {
-        Debug.Log(dropdownValue);
         Instance.inputMode = dropdownValue;
         PlayerPrefs.SetInt("inputMode", dropdownValue);
     }

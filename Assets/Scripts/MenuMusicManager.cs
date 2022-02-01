@@ -76,10 +76,10 @@ class MenuMusicManager : MonoBehaviour
         timelineHandle.Free();
     }
 
-    void OnGUI()
+    /*void OnGUI()
     {
         GUILayout.Box(String.Format("Current Bar = {0}, Last Marker = {1}", timelineInfo.currentMusicBar, (string)timelineInfo.lastMarker));
-    }
+    }*/
 
     [AOT.MonoPInvokeCallback(typeof(FMOD.Studio.EVENT_CALLBACK))]
     static FMOD.RESULT BeatEventCallback(FMOD.Studio.EVENT_CALLBACK_TYPE type, IntPtr instancePtr, IntPtr parameterPtr)
@@ -118,24 +118,26 @@ class MenuMusicManager : MonoBehaviour
     }
 
     void Update() {
-        if(lastMarkerName != (string) timelineInfo.lastMarker) {
-            lastMarkerName = (string) timelineInfo.lastMarker;
-            switch (lastMarkerName) {
-                case "Text 1":
-                    cutscene.FadeText1();
-                    break;
-                case "Text 2":
-                    cutscene.FadeText2();
-                    break;
-                case "Text 3":
-                    cutscene.FadeText3();
-                    break;
-                case "Text 4":
-                    cutscene.FadeText4();
-                    break;
-                case "Main Menu":
-                    cutscene.StartMenu();
-                    break;
+        if(cutscene != null) {
+            if(lastMarkerName != (string) timelineInfo.lastMarker) {
+                lastMarkerName = (string) timelineInfo.lastMarker;
+                switch (lastMarkerName) {
+                    case "Text 1":
+                        cutscene.FadeText1();
+                        break;
+                    case "Text 2":
+                        cutscene.FadeText2();
+                        break;
+                    case "Text 3":
+                        cutscene.FadeText3();
+                        break;
+                    case "Text 4":
+                        cutscene.FadeText4();
+                        break;
+                    case "Main Menu":
+                        cutscene.StartMenu();
+                        break;
+                }
             }
         }
     }

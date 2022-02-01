@@ -11,6 +11,8 @@ public class CameraController : MonoBehaviour
     [SerializeField] private float cameraMoveSpeed;
 
     private GameBoardManager.GameBoardStateEnum boardState;
+    private bool spacePressed;
+    private bool keyPressed;
 
     // Time to hardcode input keys like an actual code wizard
 
@@ -19,27 +21,39 @@ public class CameraController : MonoBehaviour
         if(boardState == GameBoardManager.GameBoardStateEnum.mapEditor) {
             transform.position = editorStartPos;
         }
+        spacePressed = false;
+        keyPressed = false;
     }
 
     // Update is called once per frame
     void Update()
     {
+        keyPressed = false;
         if(boardState == GameBoardManager.GameBoardStateEnum.mapEditor || !InputManager.Instance.IsInMouseMode()) {
             if(Input.GetKey(KeyCode.W)) {
+                keyPressed = true;
                 transform.position += new Vector3(0, cameraMoveSpeed, 0);
             }
             if(Input.GetKey(KeyCode.S)) {
+                keyPressed = true;
                 transform.position += new Vector3(0, -cameraMoveSpeed, 0);
             }
             if(Input.GetKey(KeyCode.D)) {
+                keyPressed = true;
                 transform.position += new Vector3(cameraMoveSpeed, 0, 0);
             }
             if(Input.GetKey(KeyCode.A)) {
+                keyPressed = true;
                 transform.position += new Vector3(-cameraMoveSpeed, 0, 0);
             }
         }
         if(Input.GetKeyDown(KeyCode.Space)) {
             transform.position = zoomOutPos;
+            spacePressed = true;
+        }
+        if (spacePressed && keyPressed) {
+            transform.position = Vector3.zero;
+            spacePressed = false;
         }
     }
 
