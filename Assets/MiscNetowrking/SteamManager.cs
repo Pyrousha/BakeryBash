@@ -10,6 +10,7 @@
 #endif
 
 using UnityEngine;
+using TMPro;
 #if !DISABLESTEAMWORKS
 using System.Collections;
 using Steamworks;
@@ -21,6 +22,7 @@ using Steamworks;
 //
 [DisallowMultipleComponent]
 public class SteamManager : MonoBehaviour {
+	[SerializeField] private TextMeshProUGUI text;
 #if !DISABLESTEAMWORKS
 	protected static bool s_EverInitialized = false;
 
@@ -61,6 +63,7 @@ public class SteamManager : MonoBehaviour {
 #endif
 
 	protected virtual void Awake() {
+		if (text != null) text.text = "1";
 		// Only one instance of SteamManager at a time!
 		if (s_instance != null) {
 			Destroy(gameObject);
@@ -173,6 +176,10 @@ public class SteamManager : MonoBehaviour {
 		get {
 			return false;
 		}
+	}
+
+	protected virtual void Awake() {
+		if (text != null) text.text = "2"
 	}
 #endif // !DISABLESTEAMWORKS
 }

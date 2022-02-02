@@ -22,9 +22,11 @@ public class SteamLobby : MonoBehaviour
     {
         networkManager = GetComponent<NetworkManager>();
 
+        //text.text = "1";
+
         if (!SteamManager.Initialized) { return; }
 
-        text.text = "2";
+        //text.text = "2";
 
         lobbyCreated = Callback<LobbyCreated_t>.Create(OnLobbyCreated);
         gameLobbyJoinRequested = Callback<GameLobbyJoinRequested_t>.Create(OnGameLobbyJoinRequested);
@@ -35,7 +37,7 @@ public class SteamLobby : MonoBehaviour
     {
         button.SetActive(false); // TEMPORARY TEMPORARY TEMPORARY
 
-        text.text = "3";
+        //text.text = "3";
 
         SteamMatchmaking.CreateLobby(ELobbyType.k_ELobbyTypeFriendsOnly, networkManager.maxConnections);
     }
@@ -44,13 +46,13 @@ public class SteamLobby : MonoBehaviour
     {
         if(callback.m_eResult != EResult.k_EResultOK)
         {
-            text.text = "4";
+            //text.text = "4";
             // go back to start menu?
             button.SetActive(true); // TEMPORARY TEMPORARY TEMPORARY
             return;
         }
 
-        text.text = "5";
+        //text.text = "5";
 
         networkManager.StartHost();
 
