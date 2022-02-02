@@ -66,6 +66,8 @@ class MenuMusicManager : MonoBehaviour
 
         
         masterBus = FMODUnity.RuntimeManager.GetBus("bus:/");
+
+        masterBus.setVolume(PlayerPrefs.GetFloat("MasterVolume", 0.4f));
     }
 
     void OnDestroy()

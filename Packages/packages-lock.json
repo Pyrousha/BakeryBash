@@ -1,5 +1,19 @@
 {
   "dependencies": {
+    "com.mirror.steamworks.net": {
+      "version": "https://github.com/Chykary/FizzySteamworks.git?path=/com.mirror.steamworks.net",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {},
+      "hash": "71be1e3246af9aad6dc4f28387f8fa3b4a1c3aa8"
+    },
+    "com.rlabrecque.steamworks.net": {
+      "version": "https://github.com/rlabrecque/Steamworks.NET.git?path=/com.rlabrecque.steamworks.net",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {},
+      "hash": "5c57195686dacfe330046e9e09a35c84ba4f742a"
+    },
     "com.unity.2d.sprite": {
       "version": "1.0.0",
       "depth": 0,
