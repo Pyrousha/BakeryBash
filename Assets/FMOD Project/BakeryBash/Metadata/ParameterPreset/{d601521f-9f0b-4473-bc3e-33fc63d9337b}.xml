@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<objects serializationModel="Studio.02.02.00">
+	<object class="ParameterPreset" id="{d601521f-9f0b-4473-bc3e-33fc63d9337b}">
+		<property name="name">
+			<value>SkipCutscene</value>
+		</property>
+		<relationship name="folder">
+			<destination>{4627722f-043e-4329-a900-046dd03a0757}</destination>
+		</relationship>
+		<relationship name="parameter">
+			<destination>{1f7afd94-db75-4478-b05f-4c1e77da38e4}</destination>
+		</relationship>
+	</object>
+	<object class="GameParameter" id="{1f7afd94-db75-4478-b05f-4c1e77da38e4}">
+		<property name="parameterType">
+			<value>2</value>
+		</property>
+		<property name="maximum">
+			<value>2</value>
+		</property>
+		<property name="enumerationLabels">
+			<value>Contine</value>
+			<value>Skip</value>
+		</property>
+		<property name="initialValue">
+			<value>0</value>
+		</property>
+	</object>
+</objects>

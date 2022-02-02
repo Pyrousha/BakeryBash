@@ -141,11 +141,15 @@ class MenuMusicManager : MonoBehaviour
                         break;
                 }
             }
+            if(Input.anyKeyDown) {
+                musicInstance.setParameterByNameWithLabel("SkipCutscene", "Skip");
+            }
         }
     }
 
     public void ChangeVolume(float volume) {
         masterBus.setVolume(volume);
+        PlayerPrefs.SetFloat("MasterVolume", volume);
     }
 
     public float GetVolume() {
