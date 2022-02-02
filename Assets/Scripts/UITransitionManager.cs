@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 using DG.Tweening;
+using UnityEngine.EventSystems;
+using UnityEngine.Events;
+
 
 public class UITransitionManager : MonoBehaviour
 {
@@ -11,30 +14,27 @@ public class UITransitionManager : MonoBehaviour
     private class TransitionInstance {
         
         [SerializeField] public string name;
+        [SerializeField] public float transitionTime;
 
         [Space(10)]
 
         [SerializeField] public bool includePosition;
         [SerializeField] public Vector3 positionEnd;
-        [SerializeField] public float positionTime;
 
         [Space(10)]
 
         [SerializeField] public bool includeScale;
         [SerializeField] public float scaleEnd;
-        [SerializeField] public float scaleTime;
 
         [Space(10)]
 
         [SerializeField] public bool includeAlpha;
         [SerializeField] public float alphaEnd;
-        [SerializeField] public float alphaTime;
 
         [Space(10)]
 
-        [SerializeField] public bool includeSetChildrenActive;
-        [SerializeField] public bool setChildrenActive;
-        [SerializeField] public float setActiveDelay;
+        [SerializeField] public bool includePostCallback;
+        [SerializeField] public EventTrigger.TriggerEvent onTransitionFinish;
     }
 
     [SerializeField] private TransitionInstance[] _transitionList;
@@ -57,16 +57,18 @@ public class UITransitionManager : MonoBehaviour
             return;
         }
         if (transition.includePosition) {
-            transform.DOLocalMove(transition.positionEnd, transition.positionTime);
+            transform.DOLocalMove(transition.positionEnd, transition.transitionTime);
         }
         if (transition.includeScale) {
-            transform.DOScale(transition.scaleEnd, transition.scaleTime);
+            transform.DOScale(transition.scaleEnd, transition.transitionTime);
         }
         if (transition.includeAlpha) {
-            cGroup.DOFade(transition.alphaEnd, transition.alphaTime);
+            cGroup.DOFade(transition.alphaEnd, transition.transitionTime);
         }
-        if (transition.includeSetChildrenActive) {
-            DOVirtual.DelayedCall(transition.setActiveDelay, ()=> SetActiveCallback(transition.setChildrenActive));
+        if (transition.includePostCallback) {
+            BaseEventData eventData = new BaseEventData(EventSystem.current);
+            eventData.selectedObject = this.gameObject;
+            DOVirtual.DelayedCall(transition.transitionTime, ()=> transition.onTransitionFinish.Invoke(eventData));
         }
     }
 
