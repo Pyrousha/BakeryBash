@@ -5,10 +5,15 @@ using UnityEngine.UI;
 
 public class SelectableHeroUIButton : MonoBehaviour
 {
-    [SerializeField] private PlayerControllerHeroSelect player;
-
     [SerializeField] private HeroObject heroObj;
     [SerializeField] private GameObject selectionObj;
+
+    [Header("Network Specific Stuff")]
+    [SerializeField] private PlayerControllerHeroSelect player;
+
+    [Header("PNP Specific Stuff")]
+    [SerializeField] private PNPHeroSelectController pNPlayer;
+    [SerializeField] private int playerNum;
 
     private void Start()
     {
@@ -19,6 +24,9 @@ public class SelectableHeroUIButton : MonoBehaviour
 
     public void OnClicked()
     {
-        player.SelectHero(heroObj.Id, selectionObj);
+        if (pNPlayer != null)
+            pNPlayer.SelectHero(playerNum, heroObj.Id, selectionObj);
+        else
+            player.SelectHero(heroObj.Id, selectionObj);
     }
 }

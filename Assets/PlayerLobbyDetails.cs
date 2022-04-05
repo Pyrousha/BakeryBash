@@ -15,8 +15,10 @@ public class PlayerLobbyDetails : NetworkBehaviour
     private List<int> heroIds;
     public List<int> HeroIds => heroIds;
 
-    [SerializeField] private NetworkManagerPlayerSelect networkManager;
     [SerializeField] private HeroObject[] selectableHeroes;
+
+    [SerializeField] private List<HeroObject> P1Heroes;
+    [SerializeField] private List<HeroObject> P2Heroes;
 
     private void Start()
     {
