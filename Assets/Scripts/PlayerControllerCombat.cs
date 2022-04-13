@@ -44,9 +44,118 @@ public class PlayerControllerCombat : NetworkBehaviour
     [SerializeField] private GameObject chooseHeroOverlay;
     [SerializeField] private Image chosenItemImage;
 
+    //PNP Stuff
+    [Header("PNP Stuff")]
+    private HeroSelectController heroSelectController;
+    private List<CombatHero> heroes;
+    [SerializeField] private Color playerColor;
+
+    private bool pnpMode = false;
+
+    void Start()
+    {
+        if (PnPMode.Instance.IsPnpMode)
+        {
+            pnpMode = true;
+
+            heroSelectController = HeroSelectController.Instance;
+
+            //pnp start
+            PnPStart();
+        }
+        else
+        {
+            //Multiplayer start
+            MultiplayerStart();
+        }
+    }
+
+    void PnPStart()
+    {
+        validMoveVertices = new List<BoardVertex>();
+        validAttackVertices = new List<BoardVertex>();
+
+        inventoryImages = new List<Image>();
+        for (int i = 0; i < inventoryParent.childCount; i++)
+        {
+            inventoryImages.Add(inventoryParent.GetChild(i).GetComponent<Image>());
+        }
+
+        numCurrTokens = maxTokens;
+
+        transform.SetParent(GameObject.Find("Canvas").transform);
+        transform.localScale = new Vector3(1, 1, 1);
+
+        List<int> heroIndices = new List<int>();
+
+        if (playerNum == 1)
+        {
+            heroes = combatManager.GetP1Heroes;
+            heroIndices = heroSelectController.P1HeroIndices;
+        }
+        else if (playerNum == 2)
+        {
+            heroes = combatManager.GetP2Heroes;
+            heroIndices = heroSelectController.P2HeroIndices;
+
+            ingredientInventory = p2StartingInventory;
+        }
+
+        //Set heroes to this player's selection
+        for(int i = 0; i<heroes.Count; i++)
+        {
+            int heroIndex = heroIndices[i];
+            heroes[i].SetHeroObj(HeroIndexToHeroObjectConverter.Instance.GetHeroOfIndex(heroIndex));
+        }
+
+        //Set hero color and ownership
+        foreach (CombatHero hero in combatManager.GetP1Heroes)
+        {
+            hero.PNPSetOwnership(this, playerNum, playerNum == 1);
+        }
+        foreach (CombatHero hero in combatManager.GetP2Heroes)
+        {
+            hero.PNPSetOwnership(this, playerNum, playerNum == 2);
+        }
+
+        //Set tower color and ownership
+        foreach (CombatHero tower in combatManager.GetP1Towers)
+        {
+            tower.PNPSetOwnership(this, playerNum, playerNum == 1);
+        }
+        foreach (CombatHero tower in combatManager.GetP2Towers)
+        {
+            tower.PNPSetOwnership(this, playerNum, playerNum == 2);
+        }
+
+        //Set map ingredient color
+        foreach (CombatHero ingredient in combatManager.GetP1Ingredients)
+        {
+            ingredient.PNPSetOwnership(this, playerNum, playerNum == 1);
+        }
+        foreach (CombatHero ingredient in combatManager.GetP2Ingredients)
+        {
+            ingredient.PNPSetOwnership(this, playerNum, playerNum == 2);
+        }
+
+        //Set misc map object ownership (just deposits rn)
+        foreach (CombatHero mapObj in combatManager.GetP1MapObjs)
+        {
+            mapObj.PNPSetOwnership(this, playerNum, playerNum == 1);
+        }
+        foreach (CombatHero mapObj in combatManager.GetP2MapObjs)
+        {
+            mapObj.PNPSetOwnership(this, playerNum, playerNum == 2);
+        }
+
+        //Set baking object references
+        foreach (BakingObjectButton bobj in bakingObjs)
+            bobj.SetControllerPlayerNum(playerNum, this);
+    }
+
     [Client]
     // Start is called before the first frame update
-    void Start()
+    void MultiplayerStart()
     {
         validMoveVertices = new List<BoardVertex>();
         validAttackVertices = new List<BoardVertex>();

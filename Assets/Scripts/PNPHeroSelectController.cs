@@ -6,10 +6,6 @@ using Mirror;
 
 public class PNPHeroSelectController : MonoBehaviour
 {
-    private int playerNum;
-
-    //public Text playerNameText;
-
     public Text selectedHeroNameText;
     public Image selectedHeroImage;
 
@@ -25,7 +21,12 @@ public class PNPHeroSelectController : MonoBehaviour
     private List<int> p1SelectedHeroIds;
     private List<int> p2SelectedHeroIds;
 
+    public List<int> P1HeroIndices => p1SelectedHeroIds;
+    public List<int> P2HeroIndices => p2SelectedHeroIds;
+
     private CharacterSelectMusicManager musicManager;
+
+    [SerializeField] private LobbyCountdown lobbyCountdown;
 
     private void Start()
     {
@@ -121,7 +122,10 @@ public class PNPHeroSelectController : MonoBehaviour
 
         //Send player selections and start countdown
         HeroSelectController.Instance.LoadHeroSelections(p1SelectedHeroIds, p2SelectedHeroIds);
-        HeroSelectController.Instance.StartGame();
+
+        lobbyCountdown.StartCountdownPNP();
+
+        //HeroSelectController.Instance.StartGame();
     }
 
     public void SetReadyVisuals()

@@ -2,12 +2,15 @@
 using System.Collections.Generic;
 using UnityEngine;
 using Mirror;
+using UnityEngine.SceneManagement;
 
 public class SlideTransition : NetworkBehaviour
 {
     [SerializeField] private NetworkManagerPlayerSelect networkManager;
 
     private Animator anim;
+
+    [SerializeField] private HeroSelectController heroSelectController;
 
     // Start is called before the first frame update
     void Start()
@@ -39,5 +42,23 @@ public class SlideTransition : NetworkBehaviour
     public void SlideUpDone()
     {
         networkManager.SlideUpDone();
+    }
+
+    //PassNPlay Funcions
+
+    public void PNPStartSlideUp()
+    {
+        anim.SetTrigger("SlideUpTrigger");
+    }
+
+    public void PNPSlideUpDone()
+    {
+        heroSelectController.StartGame();
+    }
+
+    private void OnLevelWasLoaded(int level)
+    {
+        if (level == 3)
+            anim.SetTrigger("SlideDownTrigger");
     }
 }

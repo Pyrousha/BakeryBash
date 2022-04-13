@@ -6,6 +6,11 @@ using UnityEngine.SceneManagement;
 public class ButtonToScene : MonoBehaviour
 {
     public void LoadCharSelect() {
-        SceneManager.LoadScene("CharSelect");
+        SceneManager.LoadScene("CharSelect - Multiplayer");
+    }
+
+    public void LoadCharSelectPNP()
+    {
+        SceneManager.LoadScene("CharSelect - PassNPlay");
     }
 }

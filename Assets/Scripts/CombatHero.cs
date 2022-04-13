@@ -37,6 +37,7 @@ public class CombatHero : NetworkBehaviour
     //public bool IsIngredient => heroType == HeroTypeEnum.Ingredient;
     private List<IngredientObject> inventory;
     //public List<IngredientObject> Inventory => inventory;
+
     public bool IsInventoryFull()
     {
         return (inventory.Count >= 5);
@@ -96,12 +97,21 @@ public class CombatHero : NetworkBehaviour
     private BoardVertex currVertex;
     public BoardVertex CurrVertex => currVertex;
 
+    //PNPStuff
     private bool doneStart = false;
+
+    private List<PlayerControllerCombat> moveAuthPlayers;
+    private List<PlayerControllerCombat> attackAuthPlayers;
+    private List<PlayerControllerCombat> depositAuthPlayers;
 
     private void Start()
     {
         if (doneStart)
             return;
+
+        moveAuthPlayers = new List<PlayerControllerCombat>();
+        attackAuthPlayers = new List<PlayerControllerCombat>();
+        depositAuthPlayers = new List<PlayerControllerCombat>();
 
         combatManager = FindObjectOfType<CombatManager>();
 
@@ -148,6 +158,117 @@ public class CombatHero : NetworkBehaviour
         }
 
         doneStart = true;
+    }
+
+    public bool HasMoveAuthority(PlayerControllerCombat currPlayer)
+    {
+        if (moveAuthPlayers.IndexOf(currPlayer) > 0)
+            return true;
+        else
+            return false;
+    }
+    public bool HasAttackAuthority(PlayerControllerCombat currPlayer)
+    {
+        if (attackAuthPlayers.IndexOf(currPlayer) > 0)
+            return true;
+        else
+            return false;
+    }
+
+    public void PNPSetOwnership(PlayerControllerCombat newPlayer, int playerNum, bool onMySide)
+    {
+        if (doneStart == false)
+            Start();
+
+        //Set this unit color based on if it is owned by the player
+        Color colToUse;
+        if (playerNum == 1)
+            colToUse = combatManager.TeamColor;
+        else
+            colToUse = combatManager.EnemyColor;
+
+        switch (heroType)
+        {
+            case HeroTypeEnum.Hero:
+                {
+                    if (onMySide)
+                        bgSpriteRend.color = colToUse;
+                    break;
+                }
+            case HeroTypeEnum.Ingredient:
+                {
+                    //let anyone attack this
+                    attackAuthPlayers.Add(newPlayer);
+
+                    //Set sprite color based on if on ally or enemy side
+                    if(onMySide)
+                        heroSpriteRend.sprite = ingredientType.GetSprite(playerNum == 1);
+                    break;
+                }
+            case HeroTypeEnum.Tower:
+                {
+                    //Allow player to attack enemy towers
+                    if (onMySide == false)
+                        attackAuthPlayers.Add(newPlayer);
+
+
+                    //Set color, then calculate range and spawn dot icons
+                    if (onMySide) //only want to do this part once per tower
+                    {
+                        //Check which color this tower should be
+                        if (playerNum == 1) //blue side
+                            heroSpriteRend.sprite = allySprite;
+                        else
+                            heroSpriteRend.sprite = enemySprite;
+
+
+                        towerDots = new List<DotReticle>();
+
+                        //Set tower range icons
+                        List<BoardVertex> tempValidAttackVertices = GraphHelper.BFS(currVertex, basicAttackRange);
+                        foreach (BoardVertex vert in tempValidAttackVertices) //all vertices in 2 spaces of tower
+                        {
+                            if ((vert.VertexId == currVertex.VertexId) || ((vert.combatHero != null) && (vert.combatHero.heroType == HeroTypeEnum.Deposit)))
+                            {
+                                continue;
+                            }
+
+                            DotReticle newDot = Instantiate(combatManager.dotReticle).GetComponent<DotReticle>();
+                            newDot.SetVertex(vert);
+                            newDot.SetColor(colToUse);
+
+                            towerDots.Add(newDot);
+                        }
+
+                        //Make all adjacent vertices of towers pointy
+                        foreach (BoardVertex vert in currVertex.AdjacentVertices)
+                        {
+                            foreach (DotReticle dot in towerDots)
+                            {
+                                if (dot.Vertex == vert)
+                                {
+                                    dot.SprRend.sprite = combatManager.circleReticleSprite;
+                                }
+                            }
+                        }
+                    }
+
+                    break;
+                }
+            case HeroTypeEnum.Deposit:
+                {
+                    //Deposit on player's side of the map, need to attack local side instead of enemy's
+                    if (onMySide)
+                        depositAuthPlayers.Add(newPlayer);
+
+                    if (playerNum == 1 && onMySide) //blue side
+                        heroSpriteRend.sprite = allySprite;
+                    else
+                        heroSpriteRend.sprite = enemySprite;
+
+                    break;
+                }
+        }
     }
 
     public void SetOwnership(PlayerControllerCombat newPlayer, bool newIsMine)

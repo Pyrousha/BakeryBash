@@ -26,6 +26,13 @@ public class BakingObjectButton : NetworkBehaviour
 
     private List<Image> inventoryImages;
 
+    /// <summary>
+    /// Array of playercontrollers. 
+    /// NOTE: p1 is index 1, p2 is index 2, 
+    /// index 0 is unused
+    /// </summary>
+    private PlayerControllerCombat[] playerControllers = new PlayerControllerCombat[3];
+
     private bool doneStart = false;
     // Start is called before the first frame update
     void Start()
@@ -98,6 +105,11 @@ public class BakingObjectButton : NetworkBehaviour
     public void SetController(PlayerControllerCombat controller)
     {
         playerController = controller;
+    }
+
+    public void SetControllerPlayerNum(int playerNum, PlayerControllerCombat controller)
+    {
+        playerControllers[playerNum] = controller;
     }
 
     [Client]

@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class HeroSelectController : MonoBehaviour
 {
@@ -8,6 +9,12 @@ public class HeroSelectController : MonoBehaviour
 
     private int[] p1HeroIndices;
     private int[] p2HeroIndices;
+
+    public List<int> P1HeroIndices => new List<int>(p1HeroIndices);
+    public List<int> P2HeroIndices => new List<int>(p2HeroIndices);
+
+    [SerializeField] private bool pnpMode;
+    public bool PNPMode => pnpMode;
 
     // Start is called before the first frame update
     void Start()
@@ -18,7 +25,7 @@ public class HeroSelectController : MonoBehaviour
             DontDestroyOnLoad(gameObject);
         }
         else
-            Debug.LogError("Multiple HeroSelectController Found!");
+            Debug.LogError("Multiple HeroSelectControllers Found!");
     }
 
     public void LoadHeroSelections(List<int> p1Heroes, List<int> p2Heroes)
@@ -37,6 +44,6 @@ public class HeroSelectController : MonoBehaviour
 
     public void StartGame()
     {
-
+        SceneManager.LoadScene("CombatScene");
     }
 }

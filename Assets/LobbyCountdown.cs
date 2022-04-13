@@ -8,6 +8,8 @@ public class LobbyCountdown : NetworkBehaviour
     [SerializeField] private NetworkManagerPlayerSelect networkManager;
     private Animator anim;
 
+    [SerializeField] private SlideTransition slideTransition;
+
     private void Start()
     {
         anim = GetComponent<Animator>();
@@ -15,7 +17,13 @@ public class LobbyCountdown : NetworkBehaviour
 
     public void CountdownDone()
     {
-        networkManager.CountdownDone();
+        if(networkManager != null)
+            networkManager.CountdownDone();
+        else
+        {
+            //PassNPlayMode
+            slideTransition.PNPStartSlideUp();
+        }
 
         gameObject.SetActive(false);
     }
@@ -32,6 +40,12 @@ public class LobbyCountdown : NetworkBehaviour
     [ClientRpc]
     public void StartCountdownClient()
     {
+        anim.SetTrigger("StartCountdown");
+    }
+
+    public void StartCountdownPNP()
+    {
+        //called from the sever to start countdown
         anim.SetTrigger("StartCountdown");
     }
 }
