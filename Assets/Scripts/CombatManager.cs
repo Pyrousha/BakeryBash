@@ -324,6 +324,8 @@ public class CombatManager : NetworkBehaviour
 
     public void UpdateTokenVisualCount(int numCurrTokens)
     {
+        SetTokenColor();
+
         for (int i = 0; i < tokenSpriteParent.childCount; i++)
         {
             tokenSpriteParent.GetChild(i).gameObject.SetActive(i < numCurrTokens);

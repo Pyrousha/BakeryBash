@@ -464,7 +464,8 @@ public class GameBoardManager : MonoBehaviour
         {
             if (newVertex != null)
             {
-                cameraController.OnVertexClicked(newVertex);
+                if (combatManager.GetCurrPlayerController().Interactable)
+                    cameraController.OnVertexClicked(newVertex);
 
                 if(PnPMode.Instance.IsPnpMode)
                     combatManager.GetCurrPlayerController().PNPVertexClicked(newVertex);

@@ -16,7 +16,7 @@ public class OpenBakeButton : MonoBehaviour
         bakeOverlay.SetActive(!bakeOverlay.activeSelf);
 
         if (PnPMode.Instance.IsPnpMode)
-            combatManager.GetCurrPlayerController().PNPOpenBakeClicked();
+            combatManager.GetCurrPlayerController().PNPOpenBakeClicked(bakeOverlay.activeSelf);
         else
         {
             p1.OpenBakeClicked();

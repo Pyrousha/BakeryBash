@@ -39,8 +39,11 @@ public static class GraphHelper
 
         foreach (BoardVertex vert in boardManager.BoardVertices)
         {
-            vert.SetVisited(false);
-            vert.SetPrevVertex(null);
+            if (vert != null)
+            {
+                vert.SetVisited(false);
+                vert.SetPrevVertex(null);
+            }
         }
 
         List<BoardVertex> vertices = new List<BoardVertex>();

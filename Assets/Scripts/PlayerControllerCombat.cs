@@ -34,6 +34,7 @@ public class PlayerControllerCombat : NetworkBehaviour
     [SerializeField] private int[] respawnIndices;
 
     private bool interactable = true;
+    public bool Interactable => interactable;
 
     [SerializeField] private List<BakingObjectButton> bakingObjs;
 
@@ -52,6 +53,7 @@ public class PlayerControllerCombat : NetworkBehaviour
 
     //private bool pnpMode = false;
     [SerializeField] private CombatHero.PlayerColorEnum playerColor;
+    public CombatHero.PlayerColorEnum PlayerColor => playerColor;
 
     void Start()
     {
@@ -586,6 +588,8 @@ public class PlayerControllerCombat : NetworkBehaviour
                 //Enemy hero is in range, so attack is valid
                 if (PNPTryUseMoveTokens(1))
                 {
+                    Debug.Log("Clicked on \"enemy\"");
+
                     switch (enemyHero.type)
                     {
                         case CombatHero.HeroTypeEnum.Ingredient:
@@ -983,8 +987,11 @@ public class PlayerControllerCombat : NetworkBehaviour
         }
     }
 
-    public void PNPOpenBakeClicked()
+    public void PNPOpenBakeClicked(bool newOpen)
     {
+        //No moving heroes
+        SetInteractable(newOpen == false);
+
         foreach (BakingObjectButton bakeObj in bakingObjs)
         {
             ItemObject item = bakeObj.Item;

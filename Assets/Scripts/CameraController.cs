@@ -8,7 +8,10 @@ public class CameraController : MonoBehaviour
 
     [SerializeField] Vector3 editorStartPos;
     [SerializeField] Vector3 zoomOutPos;
+
+    [Header("Settings")]
     [SerializeField] private float cameraMoveSpeed;
+    [SerializeField] private bool moveToVertexWhenClicked;
 
     private GameBoardManager.GameBoardStateEnum boardState;
     private bool spacePressed;
@@ -16,51 +19,89 @@ public class CameraController : MonoBehaviour
 
     // Time to hardcode input keys like an actual code wizard
 
-    void Start() {
+    void Start()
+    {
         boardState = board.GetGameBoardStateEnum;
-        if(boardState == GameBoardManager.GameBoardStateEnum.mapEditor) {
+        if (boardState == GameBoardManager.GameBoardStateEnum.mapEditor)
+        {
             transform.position = editorStartPos;
         }
         spacePressed = false;
         keyPressed = false;
+
+        Cursor.lockState = CursorLockMode.Confined;
     }
 
     // Update is called once per frame
     void Update()
     {
         keyPressed = false;
-        if(boardState == GameBoardManager.GameBoardStateEnum.mapEditor || !InputManager.Instance.IsInMouseMode()) {
-            if(Input.GetKey(KeyCode.W)) {
+        if (boardState == GameBoardManager.GameBoardStateEnum.mapEditor || !InputManager.Instance.IsInMouseMode())
+        {
+            if (Input.GetKey(KeyCode.W))
+            {
                 keyPressed = true;
                 transform.position += new Vector3(0, cameraMoveSpeed, 0);
             }
-            if(Input.GetKey(KeyCode.S)) {
+            if (Input.GetKey(KeyCode.S))
+            {
                 keyPressed = true;
                 transform.position += new Vector3(0, -cameraMoveSpeed, 0);
             }
-            if(Input.GetKey(KeyCode.D)) {
+            if (Input.GetKey(KeyCode.D))
+            {
                 keyPressed = true;
                 transform.position += new Vector3(cameraMoveSpeed, 0, 0);
             }
-            if(Input.GetKey(KeyCode.A)) {
+            if (Input.GetKey(KeyCode.A))
+            {
                 keyPressed = true;
                 transform.position += new Vector3(-cameraMoveSpeed, 0, 0);
             }
         }
-        if(Input.GetKeyDown(KeyCode.Space)) {
+        if (InputManager.Instance.IsInMouseMode())
+        {
+            Vector3 moveDir = new Vector3(0, 0, 0);
+            Vector3 mousePos = Input.mousePosition;
+
+            if (mousePos.x <= 5)
+                moveDir += new Vector3(-1, 0, 0);
+            if (mousePos.x >= Screen.width - 5)
+                moveDir += new Vector3(1, 0, 0);
+
+            if (mousePos.y <= 5)
+                moveDir += new Vector3(0, -1, 0);
+            if (mousePos.y >= Screen.height - 5)
+                moveDir += new Vector3(0, 1, 0);
+
+            moveDir = moveDir.normalized * cameraMoveSpeed * Time.deltaTime;
+
+            transform.position += moveDir;
+        }
+
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
             transform.position = zoomOutPos;
             spacePressed = true;
         }
-        if (spacePressed && keyPressed) {
+        if (spacePressed && keyPressed)
+        {
             transform.position = Vector3.zero;
             spacePressed = false;
         }
     }
 
-    public void OnVertexClicked(BoardVertex vertex) {
-        if(InputManager.Instance.IsInMouseMode()) {
+    public void OnVertexClicked(BoardVertex vertex)
+    {
+        if (InputManager.Instance.IsInMouseMode() && moveToVertexWhenClicked)
+        {
             Vector3 vertexPos = vertex.gameObject.transform.position;
             transform.position = new Vector3(vertexPos.x, vertexPos.y, vertexPos.z);
         }
+    }
+
+    public void MoveToHero(CombatHero hero)
+    {
+        transform.position = hero.transform.position;
     }
 }

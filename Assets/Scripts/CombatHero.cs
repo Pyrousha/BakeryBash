@@ -58,6 +58,7 @@ public class CombatHero : NetworkBehaviour
     }
 
     [Header("References")]
+    [SerializeField] private HeroButton heroButton;
     [SerializeField] private SpriteRenderer heroSpriteRend;
     [SerializeField] private Text nameText;
     [SerializeField] private Slider hpSlider;
@@ -527,13 +528,16 @@ public class CombatHero : NetworkBehaviour
         if (atkText != null)
             atkText.text = BasicAttackDamage.ToString();
 
+        if(heroButton != null)
+            heroButton.SetVisual(heroObj.HeroSprite);
+
         UpdateHPBar();
     }
 
     //public void OnMouseDown()
     public void OnClicked()
     {
-        Debug.Log("MouseDown on hero " + heroObj.name);
+        //Debug.Log("MouseDown on hero " + heroObj.name);
 
         if(PnPMode.Instance.IsPnpMode)
         {
@@ -718,12 +722,12 @@ public class CombatHero : NetworkBehaviour
     public void TryAddIngredientClient(Vector3 attackerPos, Vector3 targetPos, int ingredientId)
     {
         Vector3 dir = new Vector3(0, 0, 1);
-        RaycastHit2D[] hitArr = Physics2D.RaycastAll(targetPos - new Vector3(0, 0, 0.5f), dir, 2);
+        RaycastHit[] hitArr = Physics.RaycastAll(targetPos - new Vector3(0, 0, 0.5f), dir, 2);
         Debug.DrawRay(targetPos - new Vector3(0, 0, 1), dir, Color.red, 10f);
 
         Debug.Log("debugRay");
 
-        foreach(RaycastHit2D hit in hitArr)
+        foreach(RaycastHit hit in hitArr)
         {
             CombatHero tempHero = hit.collider.gameObject.GetComponent<CombatHero>();
             if (tempHero != null)
@@ -739,12 +743,12 @@ public class CombatHero : NetworkBehaviour
     public void PNPTryAddIngredient(Vector3 attackerPos, Vector3 targetPos, int ingredientId)
     {
         Vector3 dir = new Vector3(0, 0, 1);
-        RaycastHit2D[] hitArr = Physics2D.RaycastAll(targetPos - new Vector3(0, 0, 0.5f), dir, 2);
+        RaycastHit[] hitArr = Physics.RaycastAll(targetPos - new Vector3(0, 0, 0.5f), dir, 2);
         Debug.DrawRay(targetPos - new Vector3(0, 0, 1), dir, Color.red, 10f);
 
         Debug.Log("debugRay");
 
-        foreach (RaycastHit2D hit in hitArr)
+        foreach (RaycastHit hit in hitArr)
         {
             CombatHero tempHero = hit.collider.gameObject.GetComponent<CombatHero>();
             if (tempHero != null)
@@ -775,9 +779,9 @@ public class CombatHero : NetworkBehaviour
     public void TryTakeIngredientClient(Vector3 attackerPos, Vector3 targetPos)
     {
         Vector3 dir = new Vector3(0, 0, 1);
-        RaycastHit2D[] hitArr = Physics2D.RaycastAll(attackerPos - new Vector3(0, 0, 0.5f), dir, 2);
+        RaycastHit[] hitArr = Physics.RaycastAll(attackerPos - new Vector3(0, 0, 0.5f), dir, 2);
 
-        foreach (RaycastHit2D hit in hitArr)
+        foreach (RaycastHit hit in hitArr)
         {
             CombatHero tempHero = hit.collider.gameObject.GetComponent<CombatHero>();
             if (tempHero != null)
@@ -800,9 +804,9 @@ public class CombatHero : NetworkBehaviour
     public void PNPTryTakeIngredient(Vector3 attackerPos, Vector3 targetPos)
     {
         Vector3 dir = new Vector3(0, 0, 1);
-        RaycastHit2D[] hitArr = Physics2D.RaycastAll(attackerPos - new Vector3(0, 0, 0.5f), dir, 2);
+        RaycastHit[] hitArr = Physics.RaycastAll(attackerPos - new Vector3(0, 0, 0.5f), dir, 2);
 
-        foreach (RaycastHit2D hit in hitArr)
+        foreach (RaycastHit hit in hitArr)
         {
             CombatHero tempHero = hit.collider.gameObject.GetComponent<CombatHero>();
             if (tempHero != null)
