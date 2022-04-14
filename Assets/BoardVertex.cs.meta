@@ -3,7 +3,11 @@ guid: 38de60d045d17ad49a81df106784fb49
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2
-  defaultReferences: []
+  defaultReferences:
+  - reticleObj: {instanceID: 0}
+  - indexDisplay: {instanceID: 0}
+  - vertexArrowObj: {fileID: 9008805204329397878, guid: 777e8b3c93d53ae41ba3143366e48bef,
+      type: 3}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 

@@ -112,10 +112,12 @@ public class BakingObjectButton : NetworkBehaviour
         playerControllers[playerNum] = controller;
     }
 
-    [Client]
     public void OnClicked()
     {
-        playerController.TryBake(item);
+        if (PnPMode.Instance.IsPnpMode)
+            CombatManager.Instance.GetCurrPlayerController().PNPTryBake(item);
+        else
+            playerController.TryBake(item);
     }
 
     public void UpdateRecipeUI()

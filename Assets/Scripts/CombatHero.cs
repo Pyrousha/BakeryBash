@@ -104,6 +104,19 @@ public class CombatHero : NetworkBehaviour
     private List<PlayerControllerCombat> attackAuthPlayers;
     private List<PlayerControllerCombat> depositAuthPlayers;
 
+    private PlayerControllerCombat allyPlayerController;
+
+    [System.Serializable] public enum PlayerColorEnum
+    { 
+        Blue,
+        Red
+    }
+
+    private PlayerColorEnum playerColor;
+
+    public PlayerColorEnum AllyColor => playerColor;
+
+
     private void Start()
     {
         if (doneStart)
@@ -162,17 +175,31 @@ public class CombatHero : NetworkBehaviour
 
     public bool HasMoveAuthority(PlayerControllerCombat currPlayer)
     {
-        if (moveAuthPlayers.IndexOf(currPlayer) > 0)
-            return true;
-        else
-            return false;
+        foreach (PlayerControllerCombat playerController in moveAuthPlayers)
+        {
+            if (playerController.GetInstanceID() == currPlayer.GetInstanceID())
+                    return true;
+        }
+        return false;
     }
     public bool HasAttackAuthority(PlayerControllerCombat currPlayer)
     {
-        if (attackAuthPlayers.IndexOf(currPlayer) > 0)
-            return true;
-        else
-            return false;
+        foreach (PlayerControllerCombat playerController in attackAuthPlayers)
+        {
+            if (playerController.GetInstanceID() == currPlayer.GetInstanceID())
+                return true;
+        }
+        return false;
+    }
+
+    public bool HasDepositAuthority(PlayerControllerCombat currPlayer)
+    {
+        foreach (PlayerControllerCombat playerController in depositAuthPlayers)
+        {
+            if (playerController.GetInstanceID() == currPlayer.GetInstanceID())
+                return true;
+        }
+        return false;
     }
 
     public void PNPSetOwnership(PlayerControllerCombat newPlayer, int playerNum, bool onMySide)
@@ -180,19 +207,39 @@ public class CombatHero : NetworkBehaviour
         if (doneStart == false)
             Start();
 
-        //Set this unit color based on if it is owned by the player
-        Color colToUse;
-        if (playerNum == 1)
-            colToUse = combatManager.TeamColor;
-        else
-            colToUse = combatManager.EnemyColor;
+        if (onMySide)
+            allyPlayerController = newPlayer;
+
+        Color colToUse = new Color();
+
+        //Set color
+        if (onMySide)
+        {
+            if (playerNum == 1)
+            {
+                playerColor = PlayerColorEnum.Blue;
+                colToUse = combatManager.TeamColor;
+            }
+            else
+            {
+                playerColor = PlayerColorEnum.Red;
+                colToUse = combatManager.EnemyColor;
+            }
+        }
 
         switch (heroType)
         {
             case HeroTypeEnum.Hero:
                 {
                     if (onMySide)
+                    {
+                        moveAuthPlayers.Add(newPlayer);
                         bgSpriteRend.color = colToUse;
+                    }
+                    else
+                    {
+                        attackAuthPlayers.Add(newPlayer);
+                    }
                     break;
                 }
             case HeroTypeEnum.Ingredient:
@@ -259,12 +306,14 @@ public class CombatHero : NetworkBehaviour
                 {
                     //Deposit on player's side of the map, need to attack local side instead of enemy's
                     if (onMySide)
+                    {
                         depositAuthPlayers.Add(newPlayer);
 
-                    if (playerNum == 1 && onMySide) //blue side
-                        heroSpriteRend.sprite = allySprite;
-                    else
-                        heroSpriteRend.sprite = enemySprite;
+                        if (playerNum == 1) //blue side
+                            heroSpriteRend.sprite = allySprite;
+                        else
+                            heroSpriteRend.sprite = enemySprite;
+                    }
 
                     break;
                 }
@@ -392,6 +441,17 @@ public class CombatHero : NetworkBehaviour
         UpdateHPBar();
     }
 
+    public void PNPAddStats(int atkA, int hpA)
+    {
+        basicAttackDamage += atkA;
+        maxHp += hpA;
+        hp += hpA;
+
+        atkText.text = BasicAttackDamage.ToString();
+
+        UpdateHPBar();
+    }
+
     public void SetHeroObj(HeroObject newHeroObj)
     {
         heroObj = newHeroObj;
@@ -417,6 +477,14 @@ public class CombatHero : NetworkBehaviour
 
     public void OnMouseDown()
     {
+        if(PnPMode.Instance.IsPnpMode)
+        {
+            PlayerControllerCombat currPlayer = combatManager.GetCurrPlayerController();
+            currPlayer.PNPHeroClicked(this, currPlayer == allyPlayerController);
+
+            return;
+        }
+
         if (isDead)
             return;
 
@@ -444,6 +512,15 @@ public class CombatHero : NetworkBehaviour
             playerController.TryShootTower(this);
     }
 
+    public void PNPOnTurnStartTower()
+    {
+        if (heroType != HeroTypeEnum.Tower)
+            return; //this shouldn't be called, but just in case
+
+        if (gameObject.activeSelf)
+            combatManager.GetCurrPlayerController().TryShootTower(this);
+    }
+
     [ClientRpc]
     public void TryRespawn()
     {
@@ -462,8 +539,25 @@ public class CombatHero : NetworkBehaviour
             UpdateHPBar();
         }
     }
-       
-    
+
+    public void PNPTryRespawn()
+    {
+        if (isDead && heroType == HeroTypeEnum.Hero)
+        {
+            hp += Mathf.CeilToInt(((float)maxHp) / 2f);
+            if (hp >= maxHp)
+            {
+                hp = maxHp;
+                //healed enough to respawn
+                isInvincible = false;
+                isDead = false;
+                heroSpriteRend.enabled = true;
+            }
+
+            UpdateHPBar();
+        }
+    }
+
     public void MoveToVertex(BoardVertex vertex)
     {
         if (currVertex != null)
@@ -512,6 +606,41 @@ public class CombatHero : NetworkBehaviour
         }
     }
 
+    public void PNPTakeDamage(int dmg, Vector3 attackerPos, Vector3 targetPos)
+    {
+        switch (heroType)
+        {
+            case HeroTypeEnum.Ingredient:
+                {
+                    PNPTryAddIngredient(attackerPos, targetPos, ingredientType.Id);
+                    break;
+                }
+
+            case HeroTypeEnum.Deposit:
+                {
+                    PNPTryTakeIngredient(attackerPos, targetPos);
+                    break;
+                }
+
+            default:
+                {
+                    //Hero or tower, process damage
+
+                    if (dmg <= 0)
+                    {
+                        Debug.LogError("Attempting to deal " + dmg.ToString() + " damage to hero: " + heroObj.name);
+                        return;
+                    }
+
+                    hp = Mathf.Max(0, hp - dmg);
+
+                    PNPUpdateHP(hp, attackerPos, targetPos);
+
+                    break;
+                }
+        }
+    }
+
     [ClientRpc]
     public void TryAddIngredientClient(Vector3 attackerPos, Vector3 targetPos, int ingredientId)
     {
@@ -522,6 +651,27 @@ public class CombatHero : NetworkBehaviour
         Debug.Log("debugRay");
 
         foreach(RaycastHit2D hit in hitArr)
+        {
+            CombatHero tempHero = hit.collider.gameObject.GetComponent<CombatHero>();
+            if (tempHero != null)
+            {
+                tempHero.AddIngredientToInventory(combatManager.GetIngredientWithId(ingredientId));
+
+                combatManager.SpawnInteractProjectile(ingredientId, attackerPos, targetPos);
+                return;
+            }
+        }
+    }
+
+    public void PNPTryAddIngredient(Vector3 attackerPos, Vector3 targetPos, int ingredientId)
+    {
+        Vector3 dir = new Vector3(0, 0, 1);
+        RaycastHit2D[] hitArr = Physics2D.RaycastAll(targetPos - new Vector3(0, 0, 0.5f), dir, 2);
+        Debug.DrawRay(targetPos - new Vector3(0, 0, 1), dir, Color.red, 10f);
+
+        Debug.Log("debugRay");
+
+        foreach (RaycastHit2D hit in hitArr)
         {
             CombatHero tempHero = hit.collider.gameObject.GetComponent<CombatHero>();
             if (tempHero != null)
@@ -574,6 +724,30 @@ public class CombatHero : NetworkBehaviour
             enemyPlayerController.TryReclickCurrHero();
     }
 
+    public void PNPTryTakeIngredient(Vector3 attackerPos, Vector3 targetPos)
+    {
+        Vector3 dir = new Vector3(0, 0, 1);
+        RaycastHit2D[] hitArr = Physics2D.RaycastAll(attackerPos - new Vector3(0, 0, 0.5f), dir, 2);
+
+        foreach (RaycastHit2D hit in hitArr)
+        {
+            CombatHero tempHero = hit.collider.gameObject.GetComponent<CombatHero>();
+            if (tempHero != null)
+            {
+                IngredientObject newIngredient = tempHero.PopIngredient();
+                tempHero.UpdateInventoryUI();
+
+                combatManager.GetCurrPlayerController().AddIngredientToInventory(newIngredient);
+
+                combatManager.SpawnInteractProjectile(newIngredient.Id, attackerPos, targetPos);
+                break;
+            }
+        }
+
+        if (enemyPlayerController != null)
+            enemyPlayerController.TryReclickCurrHero();
+    }
+
     public void UpdateInventoryUI()
     {
         for(int i=0; i<inventorySprites.Length;i++)
@@ -604,6 +778,22 @@ public class CombatHero : NetworkBehaviour
 
         if(enemyPlayerController != null)
             enemyPlayerController.TryReclickCurrHero();
+    }
+
+    public void PNPUpdateHP(int newHp, Vector3 attackerPos, Vector3 targetPos)
+    {
+        //Play attack animation
+        combatManager.SpawnAttackProjectile(combatManager.PlayerTurn == 1, attackerPos, targetPos);
+
+        //Update HP values
+        hp = newHp;
+
+        UpdateHPBar();
+
+        if (hp <= 0)
+            PNPHeroKilled();
+
+        combatManager.GetCurrPlayerController().PNPTryReclickCurrHero();
     }
 
     private void UpdateHPBar()
@@ -675,6 +865,52 @@ public class CombatHero : NetworkBehaviour
         }
     }
 
+    public void PNPHeroKilled()
+    {
+        switch (heroType)
+        {
+            case HeroTypeEnum.Hero:
+                {
+                    allyPlayerController.HeroKilled(this);
+
+                    allyPlayerController.ResetHeroMoveVisuals();
+
+                    heroSpriteRend.enabled = false;
+                    isInvincible = true;
+                    isDead = true;
+                    break;
+                }
+
+            case HeroTypeEnum.Tower:
+                {
+                    if (currVertex != null)
+                    {
+                        FindObjectOfType<GameBoardManager>().RemoveVertex(currVertex);
+                        if (nextTower != null)
+                            nextTower.PrevTowerDestroyed();
+                        else
+                        {
+                            if (isCore)
+                                combatManager.PNPEndGame(playerColor == PlayerColorEnum.Red);
+                        }
+                    }
+
+                    foreach (BoardVertex vert in trappedVertices)
+                    {
+                        vert.RemoveTower();
+                    }
+
+                    foreach (DotReticle dot in towerDots)
+                    {
+                        dot.gameObject.SetActive(false);
+                    }
+
+                    gameObject.SetActive(false);
+                    break;
+                }
+        }
+    }
+
     public void PrevTowerDestroyed()
     {
         isInvincible = false;
@@ -696,5 +932,17 @@ public class CombatHero : NetworkBehaviour
         Debug.Log("stepped on trapped vertex!");
 
         TakeDamageServer(tower.heroObj.BasicAttackDamage, tower.transform.position, transform.position);
+    }
+
+    public void PNPSteppedOnTrappedVertex(CombatHero tower)
+    {
+        if (playerColor == tower.AllyColor)
+            return; //ally tower should not attack same team
+
+        //Only process this on the client which owns this hero (just so no duplicate calls happen, idk what I'm doin lmaoooo)
+
+        Debug.Log("stepped on trapped vertex!");
+
+        PNPTakeDamage(tower.heroObj.BasicAttackDamage, tower.transform.position, transform.position);
     }
 }

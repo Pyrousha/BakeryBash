@@ -298,6 +298,8 @@ MonoBehaviour:
   indexDisplay: {fileID: 2508721965766208343}
   isRespawnVertex: 0
   adjacentVertices: []
+  vertexArrowObj: {fileID: 9008805204329397878, guid: 777e8b3c93d53ae41ba3143366e48bef,
+    type: 3}
 --- !u!114 &2780742724133227651
 MonoBehaviour:
   m_ObjectHideFlags: 0

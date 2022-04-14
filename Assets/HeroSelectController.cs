@@ -7,8 +7,8 @@ public class HeroSelectController : MonoBehaviour
 {
     public static HeroSelectController Instance;
 
-    private int[] p1HeroIndices;
-    private int[] p2HeroIndices;
+    [SerializeField] private int[] p1HeroIndices;
+    [SerializeField] private int[] p2HeroIndices;
 
     public List<int> P1HeroIndices => new List<int>(p1HeroIndices);
     public List<int> P2HeroIndices => new List<int>(p2HeroIndices);

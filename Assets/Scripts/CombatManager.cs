@@ -7,6 +7,8 @@ using Mirror;
 
 public class CombatManager : NetworkBehaviour
 {
+    public static CombatManager Instance;
+
     [SerializeField] private int playerTurn = 1;
     public int PlayerTurn => playerTurn;
     private int localPlayerNum;
@@ -50,6 +52,11 @@ public class CombatManager : NetworkBehaviour
     public List<CombatHero> GetP1Ingredients => p1Ingredients;
     public List<CombatHero> GetP2Ingredients => p2Ingredients;
 
+    [SerializeField] private BoxCollider2D blueCoreDepositHitbox;
+    [SerializeField] private BoxCollider2D redCoreDepositHitbox;
+    [SerializeField] private BoxCollider2D blueCoreTowerHitbox;
+    [SerializeField] private BoxCollider2D redCoreTowerHitbox;
+
     [SerializeField] private List<CombatHero> p1MapObjs;
     [SerializeField] private List<CombatHero> p2MapObjs;
     public List<CombatHero> GetP1MapObjs => p1MapObjs;
@@ -71,6 +78,8 @@ public class CombatManager : NetworkBehaviour
     [SerializeField] private GameObject blueAttackProjectile;
     [SerializeField] private GameObject redAttackProjectile;
     [SerializeField] private GameObject interactProjectile;
+    [SerializeField] private GameObject vertexArrow;
+    public GameObject VertexArrow => vertexArrow;
 
     public Sprite circleReticleSprite;
     public GameObject dotReticle;
@@ -83,6 +92,31 @@ public class CombatManager : NetworkBehaviour
 
     [SerializeField] private Color playerTokenColor;
     [SerializeField] private Color enemyTokenColor;
+
+    [Header("PNP Stuff")]
+    private PlayerControllerCombat currPlayerController;
+    [SerializeField] private GameObject blueWinOverlay;
+    [SerializeField] private GameObject redWinOverlay;
+
+    private void Start()
+    {
+        if (Instance == null)
+            Instance = this;
+        else
+            Debug.LogError("Multiple Combatmanagers found");
+
+        if(PnPMode.Instance.IsPnpMode)
+        {
+            //Game is in PNP mode
+
+            localPlayerNum = 1; //Blue side will be player1 (left), this value is only used for colors
+            playerTurn = 1;
+
+            SetTokenColor();
+
+            currPlayerController = p1Controller;
+        }
+    }
 
     [Command(requiresAuthority = false)]
     public void DoneTurn()
@@ -106,6 +140,49 @@ public class CombatManager : NetworkBehaviour
             TryRespawnHeroes(p2Heroes);
             FireTowers(p2Towers);
         }
+
+        //Get rid of enemy's core deposit to ensure it can be clicked on
+        if(playerTurn == 1)
+        {
+            blueCoreTowerHitbox.enabled = false;
+            blueCoreDepositHitbox.enabled = true;
+
+            redCoreTowerHitbox.enabled = true;
+            redCoreDepositHitbox.enabled = false;
+        }
+        else
+        {
+            blueCoreTowerHitbox.enabled = true;
+            blueCoreDepositHitbox.enabled = false;
+
+            redCoreTowerHitbox.enabled = false;
+            redCoreDepositHitbox.enabled = true;
+        }
+    }
+
+    public void PNPDoneTurn()
+    {
+        playerTurn = (playerTurn == 1) ? 2 : 1;
+
+        PNPUpdateTurnIndicator();
+        SetTokenColor();
+
+        currPlayerController = GetCurrPlayerController();
+        currPlayerController.UpdatePlayerInventoryUI();
+
+        //Try to shoot at all enemies that are in the new player's tower range
+        if (playerTurn == 1)
+        {
+            PNPTryRespawnHeroes(p1Heroes);
+            PNPFireTowers(p1Towers);
+        }
+        else
+        {
+            PNPTryRespawnHeroes(p2Heroes);
+            PNPFireTowers(p2Towers);
+        }
+
+        currPlayerController.PNPTurnStarted();
     }
 
     [ClientRpc]
@@ -182,16 +259,32 @@ public class CombatManager : NetworkBehaviour
         }
     }
 
+    public void PNPUpdateTurnIndicator()
+    {
+        bool isBlueTurn = (localPlayerNum == playerTurn);
+
+        if (isBlueTurn)
+        {
+            turnColorImg.color = teamColor;
+            turnText.text = "P1's Turn!";
+        }
+        else
+        {
+            turnColorImg.color = enemyColor;
+            turnText.text = "P2's Turn!";
+        }
+    }
+
     public void EndTurnButtonClicked()
     {
-        if (localPlayerNum != playerTurn)
+        if ((localPlayerNum != playerTurn) && (PnPMode.Instance.IsPnpMode == false))
             return; //not my turn
 
         GetCurrPlayerController().EndMyTurn();
     }
 
     [Command(requiresAuthority = false)]
-    public void UpdateTokenVisualCount(int numCurrTokens)
+    public void UpdateTokenVisualCountServer(int numCurrTokens)
     {
         UpdateTokenVisualCountClient(numCurrTokens);
     }
@@ -199,9 +292,36 @@ public class CombatManager : NetworkBehaviour
     [ClientRpc]
     public void UpdateTokenVisualCountClient(int numCurrTokens)
     {
+        /*for (int i = 0; i < tokenSpriteParent.childCount; i++)
+        {
+            tokenSpriteParent.GetChild(i).gameObject.SetActive(i < numCurrTokens);
+        }*/
+
+        UpdateTokenVisualCount(numCurrTokens);
+    }
+
+    public void UpdateTokenVisualCount(int numCurrTokens)
+    {
         for (int i = 0; i < tokenSpriteParent.childCount; i++)
         {
             tokenSpriteParent.GetChild(i).gameObject.SetActive(i < numCurrTokens);
+        }
+    }
+
+    public void UpdateAboutToUseTokenVisualCount(int totalTokensLeft, int tokensAboutToUse)
+    {
+        SetTokenColor();
+
+        for (int i = 0; i < tokenSpriteParent.childCount; i++)
+        {
+            tokenSpriteParent.GetChild(i).gameObject.SetActive(i < totalTokensLeft);
+        }
+
+        int litTokensLeft = totalTokensLeft - tokensAboutToUse;
+
+        for (int i = litTokensLeft; i < litTokensLeft + tokensAboutToUse; i++)
+        {
+            tokenSpriteParent.GetChild(i).GetComponent<Image>().color *= 0.65f;
         }
     }
 
@@ -243,6 +363,14 @@ public class CombatManager : NetworkBehaviour
         }
     }
 
+    public void PNPTryRespawnHeroes(List<CombatHero> heroes)
+    {
+        for (int i = 0; i < heroes.Count; i++)
+        {
+            heroes[i].PNPTryRespawn();
+        }
+    }
+
     [Server]
     public void FireTowers(List<CombatHero> towers)
     {
@@ -250,6 +378,15 @@ public class CombatManager : NetworkBehaviour
         {
             if(towers[i].gameObject.activeSelf)
                 towers[i].OnTurnStartTower();
+        }
+    }
+
+    public void PNPFireTowers(List<CombatHero> towers)
+    {
+        for (int i = 0; i < towers.Count; i++)
+        {
+            if (towers[i].gameObject.activeSelf)
+                towers[i].PNPOnTurnStartTower();
         }
     }
 
@@ -271,7 +408,19 @@ public class CombatManager : NetworkBehaviour
         }
     }
 
-    [Client]
+    public void PNPEndGame(bool blueWon)
+    {
+        p1Controller.SetInteractable(false);
+        p2Controller.SetInteractable(false);
+
+
+        if (blueWon)
+            blueWinOverlay.SetActive(true);
+        else
+            redWinOverlay.SetActive(true);
+    }
+
+    //[Client]
     public void SpawnAttackProjectile(bool localPlayerAttacking, Vector3 startPos, Vector3 endpos)
     {
         AttackProjectile projectile;
@@ -288,7 +437,7 @@ public class CombatManager : NetworkBehaviour
         projectile.SetPositionsAndGo(startPos, endpos);
     }
 
-    [Client]
+    //[Client]
     public void SpawnInteractProjectile(int id, Vector3 startPos, Vector3 endpos)
     {
         AttackProjectile projectile = Instantiate(interactProjectile).GetComponent<AttackProjectile>();
@@ -297,4 +446,11 @@ public class CombatManager : NetworkBehaviour
         projectile.SetPositionsAndGo(startPos, endpos);
     }
 
+    public Color GetCurrPlayerColor()
+    {
+        if (playerTurn == 1)
+            return teamColor;
+        else
+            return enemyColor;
+    }
 }

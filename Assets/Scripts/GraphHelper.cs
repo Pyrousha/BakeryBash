@@ -1,9 +1,14 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
 
 public static class GraphHelper
 {
+    private static List<BoardVertex> activeArrowVertices = new List<BoardVertex>();
+    private static GameBoardManager boardManager;
+
+
    public static List<BoardVertex> BFS(BoardVertex startingVertex, int depth)
     {
         List<BoardVertex> vertices = new List<BoardVertex>();
@@ -21,7 +26,42 @@ public static class GraphHelper
         }
 
         vertices.Remove(startingVertex);
-        return vertices;
+
+        //Debug.Log("Size: " + vertices.Count + ", distinctSize: " + vertices.Distinct().ToList().Count);
+
+        return vertices.Distinct().ToList();
+    }
+
+    public static List<BoardVertex> BFSWalkable(BoardVertex startingVertex, int depth, bool canWalkOverSpecialTerrain, GameBoardManager newBoardManager)
+    {
+        if (boardManager == null)
+            boardManager = newBoardManager;
+
+        foreach (BoardVertex vert in boardManager.BoardVertices)
+        {
+            vert.SetVisited(false);
+            vert.SetPrevVertex(null);
+        }
+
+        List<BoardVertex> vertices = new List<BoardVertex>();
+        vertices.Add(startingVertex);
+
+        for (int i = 0; i < depth; i++)
+        {
+            List<BoardVertex> tempVerts = new List<BoardVertex>(vertices);
+            foreach (BoardVertex vert in vertices)
+            {
+                tempVerts.AddRange(BFSHelperWalkable(vert, vertices, canWalkOverSpecialTerrain));
+            }
+
+            vertices = tempVerts;
+        }
+
+        vertices.Remove(startingVertex);
+
+        //Debug.Log("(Walkable) Size: " + vertices.Count + ", distinctSize: " + vertices.Distinct().ToList().Count);
+
+        return vertices.Distinct().ToList();
     }
 
     /// <summary>
@@ -40,6 +80,64 @@ public static class GraphHelper
             {
                 //Not yet visited, add to array
                 newVertices.Add(vert);
+
+                //vert.SetPrevVertex(startingVertex);
+            }
+        }
+
+        return newVertices;
+    }
+
+    private static List<BoardVertex> BFSHelperWalkable(BoardVertex startingVertex, List<BoardVertex> visitedNodes, bool canWalkOverSpecialTerrain)
+    {
+        List<BoardVertex> newVertices = new List<BoardVertex>();
+
+        foreach (BoardVertex vert in startingVertex.AdjacentVertices)
+        {
+            if (vert.visited)
+                continue;
+
+            if (vert.combatHero == null)
+            {
+                BoardEdge.EdgeTypeEnum edgeType = boardManager.GetEdgeWithVertices(startingVertex.VertexId, vert.VertexId).EdgeType;
+                //Debug.Log("Edge from " + startingVertex.VertexId + " to " + vert.VertexId + ": " + edgeType);
+
+                bool addToList = false;
+
+                switch (edgeType)
+                {
+                    case BoardEdge.EdgeTypeEnum.normal:
+                        {
+                            addToList = true;
+                            break;
+                        }
+                    case BoardEdge.EdgeTypeEnum.specialTerrain:
+                        {
+                            if (canWalkOverSpecialTerrain)
+                                addToList = true;
+                            break;
+                        }
+                    case BoardEdge.EdgeTypeEnum.respawn:
+                        {
+                            if (startingVertex.IsRespawnVertex)
+                                addToList = true;
+                            break;
+                        }
+                    default:
+                        {
+                            addToList = false;
+                            break;
+                        }
+                }
+
+                if (addToList)
+                {
+                    //Not yet visited, add to array
+                    newVertices.Add(vert);
+
+                    vert.SetPrevVertex(startingVertex);
+                    vert.SetVisited(true);
+                }
             }
         }
 
@@ -54,6 +152,33 @@ public static class GraphHelper
         foreach (BoardVertex vert in smallBFS)
             bigBFS.Remove(vert);
 
-        return bigBFS;
+        return bigBFS.Distinct().ToList();
+    }
+
+    public static void ResetVertexArrows()
+    {
+        foreach (BoardVertex vert in activeArrowVertices)
+        {
+            vert.ResetArrowVisual();
+        }
+    }
+
+    public static int SetVertexArrows(BoardVertex startingVertex, BoardVertex destinationVertex)
+    {
+        ResetVertexArrows();
+
+        int depth = 0;
+
+        BoardVertex currVert = destinationVertex;
+        while (currVert != startingVertex)
+        {
+            currVert.SetVertexArrowVisualsToPrev();
+            activeArrowVertices.Add(currVert);
+
+            currVert = currVert.PrevVertex;
+            depth++;
+        }
+
+        return depth;
     }
 }

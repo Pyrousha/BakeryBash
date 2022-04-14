@@ -48,15 +48,16 @@ public class PlayerControllerCombat : NetworkBehaviour
     [Header("PNP Stuff")]
     private HeroSelectController heroSelectController;
     private List<CombatHero> heroes;
-    [SerializeField] private Color playerColor;
+    //[SerializeField] private Color playerColor;
 
-    private bool pnpMode = false;
+    //private bool pnpMode = false;
+    [SerializeField] private CombatHero.PlayerColorEnum playerColor;
 
     void Start()
     {
         if (PnPMode.Instance.IsPnpMode)
         {
-            pnpMode = true;
+            //pnpMode = true;
 
             heroSelectController = HeroSelectController.Instance;
 
@@ -209,11 +210,17 @@ public class PlayerControllerCombat : NetworkBehaviour
         TurnStartedClient();
     }
 
+    public void PNPTurnStarted()
+    {
+        numCurrTokens = maxTokens;
+        combatManager.UpdateTokenVisualCount(numCurrTokens);
+    }
+
     [ClientRpc]
     public void TurnStartedClient()
     {
         numCurrTokens = maxTokens;
-        combatManager.UpdateTokenVisualCount(numCurrTokens);
+        combatManager.UpdateTokenVisualCountServer(numCurrTokens);
     }
 
     [Client]
@@ -360,7 +367,7 @@ public class PlayerControllerCombat : NetworkBehaviour
 
             selectedHero = newClickedHero;
 
-            List<BoardVertex> adjVertices = boardManager.GetWalkableEdges(newClickedHero.CurrVertex, selectedHero.CanWalkOverSpecialTerrain);
+            List<BoardVertex> adjVertices = boardManager.GetAdjacentWalkableEdges(newClickedHero.CurrVertex, selectedHero.CanWalkOverSpecialTerrain);
 
             foreach (BoardVertex vertex in adjVertices)
             {
@@ -440,7 +447,7 @@ public class PlayerControllerCombat : NetworkBehaviour
                                     Debug.Log("inventory full, refunding token");
                                     //Inventory is full, refund spent move tokens and do not process attack
                                     numCurrTokens += 1;
-                                    combatManager.UpdateTokenVisualCount(numCurrTokens);
+                                    combatManager.UpdateTokenVisualCountServer(numCurrTokens);
                                 }
                                 break;
                             }
@@ -454,14 +461,14 @@ public class PlayerControllerCombat : NetworkBehaviour
 
                                     //depositing does not cost tokens
                                     numCurrTokens += 1;
-                                    combatManager.UpdateTokenVisualCount(numCurrTokens);
+                                    combatManager.UpdateTokenVisualCountServer(numCurrTokens);
                                 }
                                 else
                                 {
                                     Debug.Log("inventory empty, cannot deposit, refunding token");
                                     //Inventory is full, refund spent move tokens and do not process attack
                                     numCurrTokens += 1;
-                                    combatManager.UpdateTokenVisualCount(numCurrTokens);
+                                    combatManager.UpdateTokenVisualCountServer(numCurrTokens);
                                 }
                                 break;
                             }
@@ -480,17 +487,173 @@ public class PlayerControllerCombat : NetworkBehaviour
         }
     }
 
+    public void PNPHeroClicked(CombatHero newClickedHero, bool onMySide)
+    {
+        if ((interactable == false) && (currItem == null))
+            return;
+
+        //Called on the current player's PlayerController
+
+        Debug.Log("Controller: "+gameObject.name+", PNP clicked on hero " + newClickedHero.gameObject.name);
+
+        if (newClickedHero.HasMoveAuthority(this))
+        {
+            //Try to move clicked on hero
+
+            Debug.Log("Has Move Auth");
+
+            PNPResetHeroMoveVisuals();
+
+            if (currItem != null)
+            {
+                newClickedHero.PNPAddStats(currItem.Atk, currItem.Hp);
+                chooseHeroOverlay.SetActive(false);
+                currItem = null;
+                interactable = true;
+                return;
+            }
+
+            //Clicked on one of their own heroes, highlight adjacent vertices
+
+            selectedHero = newClickedHero;
+
+            List<BoardVertex> adjVertices = boardManager.GetWalkableEdges(newClickedHero.CurrVertex, numCurrTokens, selectedHero.CanWalkOverSpecialTerrain);
+
+            foreach (BoardVertex vertex in adjVertices)
+            {
+                vertex.HighlightMove();
+            }
+
+            validMoveVertices = adjVertices;
+
+            //Calculate valid attack vertices
+            validAttackVertices = new List<BoardVertex>();
+
+            //Get valid attack vertices (towers + heroes)
+            List<BoardVertex> tempValidAttackVertices = GraphHelper.BFS(newClickedHero.CurrVertex, newClickedHero.BasicAttackRange);
+            foreach (BoardVertex vert in tempValidAttackVertices)
+            {
+                if ((vert.combatHero != null) && (vert.combatHero.HasAttackAuthority(this)) && (vert.combatHero.IsInvincible == false))
+                {
+                    if ((vert.combatHero.type == CombatHero.HeroTypeEnum.Tower) || (vert.combatHero.type == CombatHero.HeroTypeEnum.Hero))
+                    {
+                        validAttackVertices.Add(vert);
+                        vert.SetReticleActive(true, combatManager.AttackSpriteIcon);
+                    }
+                }
+            }
+
+            //Add ingredients and deposits to valid attack vertices
+            tempValidAttackVertices = GraphHelper.BFS(newClickedHero.CurrVertex, 1);
+            foreach (BoardVertex vert in tempValidAttackVertices)
+            {
+                if ((vert.combatHero != null) && (vert.combatHero.HasAttackAuthority(this) || vert.combatHero.HasDepositAuthority(this)) && (vert.combatHero.IsInvincible == false))
+                {
+                    if (vert.combatHero.type == CombatHero.HeroTypeEnum.Ingredient)
+                    {
+                        if (selectedHero.IsInventoryFull() == false)
+                        {
+                            validAttackVertices.Add(vert); //only add ingredient if inventory is not full and vertex is adjacent
+                            vert.SetReticleActive(true, combatManager.InteractSpriteIcon);
+                        }
+                    }
+                    else if (vert.combatHero.type == CombatHero.HeroTypeEnum.Deposit)
+                    {
+                        if (selectedHero.IsInventoryEmpty() == false)
+                        {
+                            validAttackVertices.Add(vert); //Has ingredient to deposit
+                            vert.SetReticleActive(true, combatManager.InteractSpriteIcon);
+                        }
+                    }
+                }
+            }
+
+            return;
+        }
+        else
+        {
+            //Clicked on an enemy hero, try to see if attacking is possible
+
+            if (selectedHero == null)
+                return;
+
+            CombatHero enemyHero = newClickedHero;
+
+            BoardVertex enemyHeroVertex = enemyHero.CurrVertex;
+
+            if (validAttackVertices.IndexOf(enemyHeroVertex) > -1)
+            {
+                //Enemy hero is in range, so attack is valid
+                if (PNPTryUseMoveTokens(1))
+                {
+                    switch (enemyHero.type)
+                    {
+                        case CombatHero.HeroTypeEnum.Ingredient:
+                            {
+                                if (selectedHero.IsInventoryFull() == false) //inventory not full, attack (add item to inventory) and use move token
+                                {
+                                    enemyHero.PNPTakeDamage(0, newClickedHero.transform.position, selectedHero.transform.position);
+                                    PNPTryReclickCurrHero();
+                                }
+                                else
+                                {
+                                    Debug.Log("inventory full, refunding token");
+                                    //Inventory is full, refund spent move tokens and do not process attack
+                                    numCurrTokens += 1;
+                                    combatManager.UpdateTokenVisualCount(numCurrTokens);
+                                }
+                                break;
+                            }
+
+                        case CombatHero.HeroTypeEnum.Deposit:
+                            {
+                                //Check if hero had ingredients to deposit
+                                if (selectedHero.IsInventoryEmpty() == false) //if(valid recipe)
+                                {
+                                    enemyHero.PNPTakeDamage(0, selectedHero.transform.position, newClickedHero.transform.position);
+
+                                    //depositing does not cost tokens
+                                    numCurrTokens += 1;
+                                    combatManager.UpdateTokenVisualCount(numCurrTokens);
+                                }
+                                else
+                                {
+                                    Debug.Log("inventory empty, cannot deposit, refunding token");
+                                    //Inventory is full, refund spent move tokens and do not process attack
+                                    numCurrTokens += 1;
+                                    combatManager.UpdateTokenVisualCount(numCurrTokens);
+                                }
+                                break;
+                            }
+
+                        default:
+                            {
+                                //Hero or Tower
+                                enemyHero.PNPTakeDamage(selectedHero.BasicAttackDamage, selectedHero.transform.position, newClickedHero.transform.position);
+                                break;
+                            }
+                    }
+                }
+                if (numCurrTokens == 0)
+                    PNPEndMyTurn();
+            }
+        }
+    }
+
     public void TryShootTower(CombatHero tower)
     {
         List<BoardVertex> tempValidAttackVertices = GraphHelper.BFS(tower.CurrVertex, tower.BasicAttackRange);
         foreach (BoardVertex vert in tempValidAttackVertices)
         {
             CombatHero possibleEnemyHero = vert.combatHero;
-            if ((possibleEnemyHero != null) && (possibleEnemyHero.IsMine == false) && (possibleEnemyHero.type == CombatHero.HeroTypeEnum.Hero))
+            if ((possibleEnemyHero != null) && (possibleEnemyHero.AllyColor != playerColor) && (possibleEnemyHero.type == CombatHero.HeroTypeEnum.Hero))
             {
                 //Hero is an enemy and is in range, attack!
                 Debug.Log("tower with name "+tower.gameObject.name+" attacking player"+ possibleEnemyHero.gameObject.name+" at turn start");
-                possibleEnemyHero.TakeDamageServer(tower.BasicAttackDamage, tower.transform.position, possibleEnemyHero.transform.position);
+                if(PnPMode.Instance.IsPnpMode)
+                    possibleEnemyHero.PNPTakeDamage(tower.BasicAttackDamage, tower.transform.position, possibleEnemyHero.transform.position);
+                else
+                    possibleEnemyHero.TakeDamageServer(tower.BasicAttackDamage, tower.transform.position, possibleEnemyHero.transform.position);
             }
         }
     }
@@ -515,11 +678,65 @@ public class PlayerControllerCombat : NetworkBehaviour
         }
     }
 
+    private BoardVertex currHoveredVert;
+
+    public void VertexHovered(BoardVertex vertex)
+    {
+        if(vertex == null)
+        {
+            currHoveredVert = null;
+            GraphHelper.ResetVertexArrows();
+            combatManager.UpdateTokenVisualCount(numCurrTokens);
+            return;
+        }
+
+        if ((selectedHero != null) && (currHoveredVert != vertex) && (validMoveVertices.IndexOf(vertex) > -1))
+        {
+            int cost = GraphHelper.SetVertexArrows(selectedHero.CurrVertex, vertex);
+
+            combatManager.UpdateAboutToUseTokenVisualCount(numCurrTokens, cost);
+
+            currHoveredVert = vertex;
+        }
+    }
+
+    public void PNPVertexClicked(BoardVertex vertex)
+    {
+        if (validMoveVertices.IndexOf(vertex) > -1)
+        {
+            int cost = GraphHelper.SetVertexArrows(selectedHero.CurrVertex, vertex);
+            GraphHelper.ResetVertexArrows();
+
+            int heroIndex = combatManager.GetIndexOfHero(playerNum, selectedHero);
+            if (PNPTryUseMoveTokens(cost))
+                PNPMoveHero(playerNum, heroIndex, vertex.VertexId);
+
+            if (numCurrTokens == 0)
+            {
+                PNPResetHeroMoveVisuals();
+                PNPEndMyTurn();
+            }
+        }
+    }
+
     [Client]
     public void TryReclickCurrHero()
     {
         if (selectedHero != null)
             TryReclickHero(selectedHero);
+    }
+
+    public void PNPTryReclickCurrHero()
+    {
+        if (selectedHero != null)
+        {
+            PNPResetHeroMoveVisuals();
+
+            if (numCurrTokens > 0)
+            {
+                PNPHeroClicked(selectedHero, playerColor == selectedHero.AllyColor);
+            }
+        }
     }
 
     [Client]
@@ -536,8 +753,38 @@ public class PlayerControllerCombat : NetworkBehaviour
         }
     }
 
+    public void PNPTryReclickHero(CombatHero hero)
+    {
+        PNPResetHeroMoveVisuals();
+
+        if (numCurrTokens > 0)
+        {
+            PNPHeroClicked(hero, true);
+        }
+    }
+
     [Client]
     public void ResetHeroMoveVisuals()
+    {
+        Debug.Log("hero visuals reset");
+
+        foreach (BoardVertex vert in validMoveVertices)
+        {
+            if (vert != null)
+                vert.ResetColor();
+        }
+
+        foreach (BoardVertex vert in validAttackVertices)
+        {
+            if (vert != null)
+                vert.SetReticleActive(false, null);
+        }
+
+        validMoveVertices = new List<BoardVertex>();
+        validAttackVertices = new List<BoardVertex>();
+    }
+
+    public void PNPResetHeroMoveVisuals()
     {
         Debug.Log("hero visuals reset");
 
@@ -564,6 +811,19 @@ public class PlayerControllerCombat : NetworkBehaviour
         {
             //player has enough tokens to do this move
             numCurrTokens -= tokenCost;
+            combatManager.UpdateTokenVisualCountServer(numCurrTokens);
+
+            return true;
+        }
+        return false;
+    }
+
+    private bool PNPTryUseMoveTokens(int tokenCost)
+    {
+        if (numCurrTokens - tokenCost >= 0)
+        {
+            //player has enough tokens to do this move
+            numCurrTokens -= tokenCost;
             combatManager.UpdateTokenVisualCount(numCurrTokens);
 
             return true;
@@ -571,11 +831,19 @@ public class PlayerControllerCombat : NetworkBehaviour
         return false;
     }
 
-    [Client]
     public void EndMyTurn()
     {
+        if (PnPMode.Instance.IsPnpMode)
+            PNPEndMyTurn();
+        else
+            ClientEndTurn();
+    }
+
+    [Client]
+    public void ClientEndTurn()
+    {
         numCurrTokens = 0;
-        combatManager.UpdateTokenVisualCount(numCurrTokens);
+        combatManager.UpdateTokenVisualCountServer(numCurrTokens);
 
         ResetHeroMoveVisuals();
 
@@ -584,6 +852,23 @@ public class PlayerControllerCombat : NetworkBehaviour
         selectedHero = null;
 
         combatManager.DoneTurn();
+    }
+
+    public void PNPEndMyTurn()
+    {
+        if (interactable == false) //Don't end turn if just baked something for example
+            return;
+
+        numCurrTokens = 0;
+        combatManager.UpdateTokenVisualCount(numCurrTokens);
+
+        PNPResetHeroMoveVisuals();
+
+        bakingOverlay.SetActive(false);
+
+        selectedHero = null;
+
+        combatManager.PNPDoneTurn();
     }
 
     [Command(requiresAuthority = false)]
@@ -607,6 +892,16 @@ public class PlayerControllerCombat : NetworkBehaviour
             TryReclickHero(heroToMove);
     }
 
+    public void PNPMoveHero(int playerNum, int heroIndex, int newVertexId)
+    {
+        CombatHero heroToMove = combatManager.GetHeroByIndex(playerNum, heroIndex);
+        BoardVertex vertex = boardManager.GetVertexWithId(newVertexId);
+        heroToMove.MoveToVertex(vertex);
+
+        if (heroToMove.AllyColor == playerColor)
+            PNPTryReclickHero(heroToMove);
+    }
+
     [Client]
     public void TryBake(ItemObject item)
     {
@@ -622,6 +917,29 @@ public class PlayerControllerCombat : NetworkBehaviour
             //Set the currently selected item
             currItem = item;
             
+            //Don't allow the player to move any of their heroes/attack/etc.
+            SetInteractable(false);
+
+            //Show the overlay for "Who's hungry!"
+            chooseHeroOverlay.SetActive(true);
+            chosenItemImage.sprite = item.GetSprite;
+        }
+    }
+
+    public void PNPTryBake(ItemObject item)
+    {
+        if (item.HasIngredientsInInventory(ingredientInventory))
+        {
+            //Update inventory
+            ingredientInventory = item.GetNewInventory();
+            UpdatePlayerInventoryUI();
+
+            //Close baking menu thingie
+            bakingOverlay.SetActive(false);
+
+            //Set the currently selected item
+            currItem = item;
+
             //Don't allow the player to move any of their heroes/attack/etc.
             SetInteractable(false);
 
@@ -652,7 +970,24 @@ public class PlayerControllerCombat : NetworkBehaviour
         }
     }
 
-    [Client]
+    public void PNPOpenBakeClicked()
+    {
+        foreach (BakingObjectButton bakeObj in bakingObjs)
+        {
+            ItemObject item = bakeObj.Item;
+
+            if (item.HasIngredientsInInventory(ingredientInventory))
+            {
+                bakeObj.SetVisualsFromInventory(item, true);
+            }
+            else
+            {
+                bakeObj.SetVisualsFromInventory(item, false);
+            }
+        }
+    }
+
+    //[Client]
     public void AddIngredientToInventory(IngredientObject newIngredient)
     {
         ingredientInventory.Add(newIngredient);
@@ -665,7 +1000,7 @@ public class PlayerControllerCombat : NetworkBehaviour
         {
             if(ingredientInventory.Count > i)
             {
-                inventoryImages[i].sprite = ingredientInventory[i].GetSprite(true);
+                inventoryImages[i].sprite = ingredientInventory[i].GetSprite(playerColor == CombatHero.PlayerColorEnum.Blue);
             }
             else
             {

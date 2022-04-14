@@ -1396,6 +1396,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0e51641769c28dd409c9d3e427f0c408, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  p1HeroIndices: 
+  p2HeroIndices: 
   pnpMode: 1
 --- !u!4 &599455399
 Transform:

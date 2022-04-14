@@ -28,6 +28,20 @@ public class BoardVertex : NetworkBehaviour
     //private SpriteRenderer towerRangeIcon;
     //public SpriteRenderer TowerRangeIcon => towerRangeIcon;
 
+    private BoardVertex prevVertex;
+    public BoardVertex PrevVertex => prevVertex;
+
+    private Transform vertexArrow;
+    private SpriteRenderer vertexArrowSprite;
+
+    [SerializeField] private GameObject vertexArrowObj;
+
+    public bool visited { get; private set; }
+    public void SetVisited(bool newVisited)
+    {
+        visited = newVisited;
+    }
+
     private void Start()
     {
         //boardManager = FindObjectOfType<GameBoardManager>();
@@ -36,6 +50,12 @@ public class BoardVertex : NetworkBehaviour
         {
             adjacentVertices = new List<BoardVertex>();
         }
+
+        if (vertexArrow == null)
+            vertexArrow = Instantiate(vertexArrowObj, transform).transform;
+        vertexArrowSprite = vertexArrow.GetComponent<SpriteRenderer>();
+
+        vertexArrow.transform.localPosition = Vector3.zero;
 
         spriteRenderer = GetComponent<SpriteRenderer>();
 
@@ -114,7 +134,10 @@ public class BoardVertex : NetworkBehaviour
     {
         if ((tower != null) && (tower.gameObject.activeSelf))
         {
-            hero.SteppedOnTrappedVertex(tower);
+            if (PnPMode.Instance.IsPnpMode)
+                hero.PNPSteppedOnTrappedVertex(tower);
+            else
+                hero.SteppedOnTrappedVertex(tower);
         }
     }
 
@@ -136,4 +159,25 @@ public class BoardVertex : NetworkBehaviour
             towerRangeIcon.sprite = newSprite;
         }
     }*/
+
+    public void SetPrevVertex(BoardVertex prev)
+    {
+        prevVertex = prev;
+    }
+
+    public void ResetArrowVisual()
+    {
+        vertexArrowSprite.enabled = false;
+    }
+
+    public void SetVertexArrowVisualsToPrev()
+    {
+        Vector2 distToPrev = new Vector2(transform.position.x - prevVertex.transform.position.x, transform.position.y - prevVertex.transform.position.y);
+
+        vertexArrow.transform.up = (prevVertex.transform.position - transform.position);
+
+        vertexArrowSprite.enabled = true;
+        vertexArrowSprite.size = new Vector2(1, -distToPrev.magnitude);
+        vertexArrowSprite.color = CombatManager.Instance.GetCurrPlayerColor();
+    }
 }

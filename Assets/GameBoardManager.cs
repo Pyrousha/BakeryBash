@@ -20,7 +20,8 @@ public class GameBoardManager : MonoBehaviour
     [SerializeField] private GameBoardStateEnum gameBoardState;
     public GameBoardStateEnum GetGameBoardStateEnum => gameBoardState;
 
-    private List<BoardVertex> boardVertices; 
+    private List<BoardVertex> boardVertices;
+    public List<BoardVertex> BoardVertices => boardVertices;
     private List<List<BoardEdge>> boardEdgesTable;
     private List<List<bool>> edgeConnectionsTable;
 
@@ -135,7 +136,7 @@ public class GameBoardManager : MonoBehaviour
         doneStart = true;
     }
 
-    public List<BoardVertex> GetWalkableEdges(BoardVertex currVertex, bool canWalkOverSpecialTerrain)
+    public List<BoardVertex> GetAdjacentWalkableEdges(BoardVertex currVertex, bool canWalkOverSpecialTerrain)
     {
         List<BoardVertex> adjVertices = new List<BoardVertex>();
 
@@ -143,6 +144,9 @@ public class GameBoardManager : MonoBehaviour
 
         foreach(BoardVertex vert in currVertex.AdjacentVertices)
         {
+            if (vert.combatHero != null)
+                continue;
+
             BoardEdge.EdgeTypeEnum edgeType = GetEdgeWithVertices(currVertexID, vert.VertexId).EdgeType;
 
             bool addToList = false;
@@ -170,13 +174,16 @@ public class GameBoardManager : MonoBehaviour
 
             if (addToList)
             {
-                //Character can normally move to this vertex, last step is to make sure this space is not already occupied
-                if (vert.combatHero == null)
-                    adjVertices.Add(vert);
+                adjVertices.Add(vert);
             }
         }
 
         return adjVertices;
+    }
+
+    public List<BoardVertex> GetWalkableEdges(BoardVertex currVertex, int maxSteps, bool canWalkOverSpecialTerrain)
+    {
+        return GraphHelper.BFSWalkable(currVertex, maxSteps, canWalkOverSpecialTerrain, this);
     }
 
     public BoardVertex GetVertexWithId(int id)
@@ -210,6 +217,8 @@ public class GameBoardManager : MonoBehaviour
 
     private void Update()
     {
+        CheckVertexHovered();
+
         if (Input.GetMouseButtonDown(0))
         {
             VertexClicked();
@@ -456,8 +465,52 @@ public class GameBoardManager : MonoBehaviour
             if (newVertex != null)
             {
                 cameraController.OnVertexClicked(newVertex);
-                combatManager.GetCurrPlayerController().OnVertexClicked(newVertex);
+
+                if(PnPMode.Instance.IsPnpMode)
+                    combatManager.GetCurrPlayerController().PNPVertexClicked(newVertex);
+                else
+                    combatManager.GetCurrPlayerController().OnVertexClicked(newVertex);
             }
+        }
+    }
+
+    public void CheckVertexHovered()
+    {
+        Ray ray = Camera.main.ScreenPointToRay(new Vector3(Input.mousePosition.x, Input.mousePosition.y, 0));
+        Plane xy = new Plane(Vector3.forward, new Vector3(0, 0, 0));
+        float distance;
+        xy.Raycast(ray, out distance);
+        //Debug.Log(ray.GetPoint(distance));
+
+        RaycastHit2D hit = Physics2D.Raycast(ray.GetPoint(distance), Vector2.zero);
+
+        if (hit.transform == null)
+            return;
+
+        BoardVertex newVertex = hit.transform.gameObject.GetComponent<BoardVertex>();
+
+        if (gameBoardState == GameBoardStateEnum.mapEditor)
+        {
+            if (newVertex != null)
+            {
+                if (vertexMode)
+                {
+                    vertexToMove = newVertex.gameObject.transform;
+                }
+                else
+                {
+                    firstVertexClicked = newVertex;
+                }
+            }
+        }
+        else
+        {
+            //cameraController.OnVertexClicked(newVertex);
+
+            if (PnPMode.Instance.IsPnpMode)
+                combatManager.GetCurrPlayerController().VertexHovered(newVertex);
+            //else
+            //combatManager.GetCurrPlayerController().OnVertexClicked(newVertex);
         }
     }
 
