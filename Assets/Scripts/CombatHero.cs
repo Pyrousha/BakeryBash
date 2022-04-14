@@ -173,6 +173,61 @@ public class CombatHero : NetworkBehaviour
         doneStart = true;
     }
 
+    private bool moving;
+    private List<BoardVertex> pathToMoveAlong;
+    private Vector3 target;
+
+    [SerializeField] private float moveSpd = 10;
+
+    private void FixedUpdate()
+    {
+        if (moving == false)
+            return;
+
+        Vector3 dir = target - transform.position;
+
+        float moveX;
+        float moveY;
+        //Move towards target
+        if(dir.x < 0)
+        {
+            moveX = Mathf.Max(dir.x, dir.normalized.x * moveSpd);
+        }
+        else
+        {
+            moveX = Mathf.Min(dir.x, dir.normalized.x * moveSpd);
+        }
+
+        if(dir.y < 0)
+        {
+            moveY = Mathf.Max(dir.y, dir.normalized.y * moveSpd);
+        }
+        else
+        {
+            moveY = Mathf.Min(dir.y, dir.normalized.y * moveSpd);
+        }
+
+        transform.position += new Vector3(moveX, moveY, 0);
+
+        //Debug.Log(dir.magnitude);
+
+        //Get new target
+        if ((dir).magnitude <= 0.5f)
+        {
+            transform.position = target;
+
+            if(pathToMoveAlong.Count > 0)
+            {
+                target = pathToMoveAlong[0].transform.position;
+                pathToMoveAlong.RemoveAt(0);
+            }
+            else
+            {
+                moving = false;
+            }
+        }
+    }
+
     public bool HasMoveAuthority(PlayerControllerCombat currPlayer)
     {
         foreach (PlayerControllerCombat playerController in moveAuthPlayers)
@@ -475,8 +530,11 @@ public class CombatHero : NetworkBehaviour
         UpdateHPBar();
     }
 
-    public void OnMouseDown()
+    //public void OnMouseDown()
+    public void OnClicked()
     {
+        Debug.Log("MouseDown on hero " + heroObj.name);
+
         if(PnPMode.Instance.IsPnpMode)
         {
             PlayerControllerCombat currPlayer = combatManager.GetCurrPlayerController();
@@ -566,6 +624,21 @@ public class CombatHero : NetworkBehaviour
         currVertex = vertex;
         transform.position = vertex.transform.position + new Vector3(0,0,-0.2f);
         vertex.SetCombatHero(this);
+    }
+
+    public void MoveToVertexPath(List<BoardVertex> path)
+    {
+        BoardVertex endVertex = path[path.Count - 1];
+        if (currVertex != null)
+            currVertex.SetCombatHero(null);
+
+        currVertex = endVertex;
+        endVertex.SetCombatHero(this);
+
+        pathToMoveAlong = new List<BoardVertex>(path);
+        moving = true;
+        target = pathToMoveAlong[0].transform.position;
+        pathToMoveAlong.RemoveAt(0);
     }
 
     [Command(requiresAuthority = false)]

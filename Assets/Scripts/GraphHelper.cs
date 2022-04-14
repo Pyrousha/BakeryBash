@@ -163,22 +163,25 @@ public static class GraphHelper
         }
     }
 
-    public static int SetVertexArrows(BoardVertex startingVertex, BoardVertex destinationVertex)
+    public static List<BoardVertex> SetVertexArrows(BoardVertex startingVertex, BoardVertex destinationVertex)
     {
         ResetVertexArrows();
 
-        int depth = 0;
+        List<BoardVertex> path = new List<BoardVertex>();
 
         BoardVertex currVert = destinationVertex;
         while (currVert != startingVertex)
         {
+            path.Add(currVert);
+
             currVert.SetVertexArrowVisualsToPrev();
             activeArrowVertices.Add(currVert);
 
             currVert = currVert.PrevVertex;
-            depth++;
         }
 
-        return depth;
+        path.Reverse();
+
+        return path;
     }
 }

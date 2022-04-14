@@ -692,7 +692,7 @@ public class PlayerControllerCombat : NetworkBehaviour
 
         if ((selectedHero != null) && (currHoveredVert != vertex) && (validMoveVertices.IndexOf(vertex) > -1))
         {
-            int cost = GraphHelper.SetVertexArrows(selectedHero.CurrVertex, vertex);
+            int cost = GraphHelper.SetVertexArrows(selectedHero.CurrVertex, vertex).Count;
 
             combatManager.UpdateAboutToUseTokenVisualCount(numCurrTokens, cost);
 
@@ -704,12 +704,16 @@ public class PlayerControllerCombat : NetworkBehaviour
     {
         if (validMoveVertices.IndexOf(vertex) > -1)
         {
-            int cost = GraphHelper.SetVertexArrows(selectedHero.CurrVertex, vertex);
+            //Get path to destination, then get rid of arrows
+            List<BoardVertex> path = GraphHelper.SetVertexArrows(selectedHero.CurrVertex, vertex);
             GraphHelper.ResetVertexArrows();
+
+            int cost = path.Count;
 
             int heroIndex = combatManager.GetIndexOfHero(playerNum, selectedHero);
             if (PNPTryUseMoveTokens(cost))
-                PNPMoveHero(playerNum, heroIndex, vertex.VertexId);
+                //PNPMoveHero(playerNum, heroIndex, vertex.VertexId);
+                PNPMoveHeroPath(playerNum, heroIndex, path);
 
             if (numCurrTokens == 0)
             {
@@ -897,6 +901,15 @@ public class PlayerControllerCombat : NetworkBehaviour
         CombatHero heroToMove = combatManager.GetHeroByIndex(playerNum, heroIndex);
         BoardVertex vertex = boardManager.GetVertexWithId(newVertexId);
         heroToMove.MoveToVertex(vertex);
+
+        if (heroToMove.AllyColor == playerColor)
+            PNPTryReclickHero(heroToMove);
+    }
+
+    private void PNPMoveHeroPath(int playerNum, int heroIndex, List<BoardVertex> path)
+    {
+        CombatHero heroToMove = combatManager.GetHeroByIndex(playerNum, heroIndex);
+        heroToMove.MoveToVertexPath(path);
 
         if (heroToMove.AllyColor == playerColor)
             PNPTryReclickHero(heroToMove);

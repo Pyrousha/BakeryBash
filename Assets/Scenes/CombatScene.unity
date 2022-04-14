@@ -300,6 +300,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5261713882226379682, guid: fa2d22d60309bb34193dff17f5e51b0f,
         type: 3}
+      propertyPath: moveSpd
+      value: 0.55
+      objectReference: {fileID: 0}
+    - target: {fileID: 5261713882226379682, guid: fa2d22d60309bb34193dff17f5e51b0f,
+        type: 3}
       propertyPath: startingVertexId
       value: 257
       objectReference: {fileID: 0}
@@ -551,6 +556,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_SortingOrder
       value: 45
+      objectReference: {fileID: 0}
+    - target: {fileID: 5261713882226379682, guid: fa2d22d60309bb34193dff17f5e51b0f,
+        type: 3}
+      propertyPath: moveSpd
+      value: 0.55
       objectReference: {fileID: 0}
     - target: {fileID: 5261713882226379682, guid: fa2d22d60309bb34193dff17f5e51b0f,
         type: 3}
@@ -2672,6 +2682,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_WasSpriteAssigned
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5261713882226379682, guid: fa2d22d60309bb34193dff17f5e51b0f,
+        type: 3}
+      propertyPath: moveSpd
+      value: 0.55
       objectReference: {fileID: 0}
     - target: {fileID: 5261713882226379682, guid: fa2d22d60309bb34193dff17f5e51b0f,
         type: 3}
@@ -6244,6 +6259,7 @@ MonoBehaviour:
   isInvincible: 0
   nextTower: {fileID: 0}
   startingVertexId: 190
+  moveSpd: 10
 --- !u!212 &994011928
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -6736,6 +6752,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5261713882226379682, guid: fa2d22d60309bb34193dff17f5e51b0f,
         type: 3}
+      propertyPath: moveSpd
+      value: 0.55
+      objectReference: {fileID: 0}
+    - target: {fileID: 5261713882226379682, guid: fa2d22d60309bb34193dff17f5e51b0f,
+        type: 3}
       propertyPath: startingVertexId
       value: 255
       objectReference: {fileID: 0}
@@ -7131,6 +7152,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_SortingOrder
       value: 45
+      objectReference: {fileID: 0}
+    - target: {fileID: 5261713882226379682, guid: fa2d22d60309bb34193dff17f5e51b0f,
+        type: 3}
+      propertyPath: moveSpd
+      value: 0.55
       objectReference: {fileID: 0}
     - target: {fileID: 5261713882226379682, guid: fa2d22d60309bb34193dff17f5e51b0f,
         type: 3}
@@ -10624,6 +10650,7 @@ MonoBehaviour:
   isInvincible: 0
   nextTower: {fileID: 0}
   startingVertexId: 199
+  moveSpd: 10
 --- !u!1 &1491638557
 GameObject:
   m_ObjectHideFlags: 0
@@ -12073,6 +12100,7 @@ MonoBehaviour:
   isInvincible: 0
   nextTower: {fileID: 0}
   startingVertexId: 112
+  moveSpd: 10
 --- !u!224 &1655817753 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 5261713882226379684, guid: 0a336ad66b0d4ab4a9d0490fe578d98f,
@@ -13216,6 +13244,7 @@ MonoBehaviour:
   isInvincible: 0
   nextTower: {fileID: 0}
   startingVertexId: 200
+  moveSpd: 10
 --- !u!114 &1962516584 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 9147159563151215485, guid: 85bf9af376a7c6c469fb576b742d4e3a,
@@ -15797,6 +15826,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5261713882226379682, guid: fa2d22d60309bb34193dff17f5e51b0f,
         type: 3}
+      propertyPath: moveSpd
+      value: 0.55
+      objectReference: {fileID: 0}
+    - target: {fileID: 5261713882226379682, guid: fa2d22d60309bb34193dff17f5e51b0f,
+        type: 3}
       propertyPath: startingVertexId
       value: 256
       objectReference: {fileID: 0}
@@ -16135,6 +16169,7 @@ MonoBehaviour:
   isInvincible: 0
   nextTower: {fileID: 0}
   startingVertexId: 238
+  moveSpd: 10
 --- !u!222 &6892809448915370439
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -16216,6 +16251,7 @@ MonoBehaviour:
   isInvincible: 0
   nextTower: {fileID: 0}
   startingVertexId: 274
+  moveSpd: 10
 --- !u!222 &6892809449117679127
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -16530,6 +16566,7 @@ MonoBehaviour:
   isInvincible: 0
   nextTower: {fileID: 0}
   startingVertexId: 110
+  moveSpd: 10
 --- !u!114 &6892809450380590849
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16562,6 +16599,7 @@ MonoBehaviour:
   isInvincible: 0
   nextTower: {fileID: 0}
   startingVertexId: 275
+  moveSpd: 10
 --- !u!222 &6892809450380590850
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -16692,6 +16730,7 @@ MonoBehaviour:
   isInvincible: 0
   nextTower: {fileID: 0}
   startingVertexId: 237
+  moveSpd: 10
 --- !u!1001 &7104577648122473006
 PrefabInstance:
   m_ObjectHideFlags: 0

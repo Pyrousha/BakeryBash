@@ -113,8 +113,30 @@ public class CombatManager : NetworkBehaviour
             playerTurn = 1;
 
             SetTokenColor();
+            PNPUpdateTurnIndicator();
 
             currPlayerController = p1Controller;
+        }
+    }
+
+    private void Update()
+    {
+        if (Input.GetMouseButtonDown(0))
+        {
+            Debug.Log("Click");
+
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            RaycastHit[] hitObjs = Physics.RaycastAll(ray, 500f);
+
+            foreach (RaycastHit hitObj in hitObjs)
+            {
+                CombatHero ch = hitObj.collider.gameObject.GetComponent<CombatHero>();
+                if (ch != null)
+                {
+                    ch.OnClicked();
+                    return;
+                }
+            }
         }
     }
 
