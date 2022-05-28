@@ -17,6 +17,8 @@ public class CameraController : MonoBehaviour
     private bool spacePressed;
     private bool keyPressed;
 
+    [SerializeField] private bool lockMouse;
+
     // Time to hardcode input keys like an actual code wizard
 
     void Start()
@@ -29,7 +31,8 @@ public class CameraController : MonoBehaviour
         spacePressed = false;
         keyPressed = false;
 
-        Cursor.lockState = CursorLockMode.Confined;
+        if(lockMouse)
+            Cursor.lockState = CursorLockMode.Confined;
     }
 
     // Update is called once per frame

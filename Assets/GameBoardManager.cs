@@ -32,7 +32,7 @@ public class GameBoardManager : MonoBehaviour
     [SerializeField] private CameraController cameraController;
     
     private bool vertexMode = true;
-    private Transform vertexToMove;
+    //private Transform vertexToMove;
     [SerializeField] private Text vertexModeText;
 
     [SerializeField] private Transform boardParent;
@@ -44,6 +44,9 @@ public class GameBoardManager : MonoBehaviour
 
     [Header("Board To Load")]
     [SerializeField] private GameObject boardToLoadPrefab;
+
+    private float hexWidth = 2;
+    private float hexHeight = 1.73205080757f;
 
     private bool doneStart = false;
     // Start is called before the first frame update
@@ -134,6 +137,8 @@ public class GameBoardManager : MonoBehaviour
         }
 
         doneStart = true;
+
+        StartCoroutine(TryAddNewVertex());
     }
 
     public List<BoardVertex> GetAdjacentWalkableEdges(BoardVertex currVertex, bool canWalkOverSpecialTerrain)
@@ -227,24 +232,6 @@ public class GameBoardManager : MonoBehaviour
 
         if (gameBoardState == GameBoardStateEnum.mapEditor)
         {
-            if (vertexToMove != null)
-            {
-                Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-                vertexToMove.position = new Vector3(mousePos.x, mousePos.y, vertexToMove.position.z);
-
-                //Update linerenderes
-                for (int i = 0; i < boardEdgesTable.Count; i++)
-                {
-                    for (int j = 0; j < boardEdgesTable.Count; j++)
-                    {
-                        if (boardEdgesTable[i][j] != null)
-                        {
-                            boardEdgesTable[i][j].UpdateLineRenderer();
-                        }
-                    }
-                }
-            }
-
             if(Input.GetKeyDown(KeyCode.Space))
             {
                 //Update linerenderes
@@ -260,10 +247,12 @@ public class GameBoardManager : MonoBehaviour
                 }
             }
 
+            placeVertex = Input.GetMouseButton(0);
+
             if (Input.GetMouseButtonUp(0))
                 VertexReleased();
 
-            if (Input.GetMouseButtonDown(1))
+            if (Input.GetMouseButton(1))
                 RemoveVertexUnderMouse();
 
             if (Input.GetKeyDown(KeyCode.Tab))
@@ -276,7 +265,8 @@ public class GameBoardManager : MonoBehaviour
 
     private void SwapVertexEdgeMode()
     {
-        vertexToMove = null;
+        //vertexToMove = null;
+        firstVertexClicked = null;
 
         vertexMode = !vertexMode;
 
@@ -309,59 +299,127 @@ public class GameBoardManager : MonoBehaviour
         #endif
     }
 
-    private void OnMouseDown()
+    private bool placeVertex;
+    public IEnumerator TryAddNewVertex()
     {
-        if ((gameBoardState == GameBoardStateEnum.mapEditor) && (vertexMode))
+        while (true)
         {
-            //Add new vertex when map is clicked on
-            AddNewVertex();
+            if ((placeVertex) && (vertexMode))
+            {
+                Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+
+                Vector3 posToPlace = GetRoundedHexPos(mousePos);
+
+                RaycastHit2D hit = Physics2D.Raycast(posToPlace + new Vector3(0,0,-0.2f), Vector3.forward);
+
+                BoardVertex newVert = hit.transform.gameObject.GetComponent<BoardVertex>();
+                if (newVert != null)
+                {
+                    Debug.Log("Already a vertex here");
+                }
+                else
+                {
+                    //Create and place board vertex prefab
+                    Transform newBoardVertex = Instantiate(boardVertexPrefab).transform;
+
+                    newBoardVertex.position = posToPlace;
+
+                    newBoardVertex.parent = vertexParent;
+
+                    BoardVertex newVertex = newBoardVertex.GetComponent<BoardVertex>();
+
+
+                    if (openIndices.Count > 0)
+                    {
+                        //A vertex was removed, so fill that slot instead of expanding table (since recalulating all the indices would be ass lmao)
+                        int newIndex = openIndices[0];
+                        openIndices.RemoveAt(0);
+
+                        newVertex.SetVertexId(newIndex);
+
+                        boardVertices[newIndex] = newVertex;
+                    }
+                    else
+                    {
+                        newVertex.SetVertexId(numVertices);
+                        numVertices++;
+
+                        boardVertices.Add(newVertex);
+
+                        //Update edge tables to include new vertex
+                        for (int i = 0; i < numVertices - 1; i++)
+                        {
+                            //Add a new element to each row (add a new column) to each table
+                            boardEdgesTable[i].Add(null);
+                            edgeConnectionsTable[i].Add(false);
+                        }
+
+                        //Add a new row to each table
+                        boardEdgesTable.Add(new List<BoardEdge>(new BoardEdge[numVertices]));
+                        edgeConnectionsTable.Add(new List<bool>(new bool[numVertices]));
+                    }
+
+                    CalculateAdjacentVertices();
+
+                    //Debug.Log("table after adding vertex:" + PrintEdgeConnectionsTable());
+
+                    yield return new WaitForSeconds(0.02f);
+
+                    TryAddAdjacentEdges(newVertex);
+                }
+            }
+
+            yield return new WaitForSeconds(0.02f);
         }
     }
 
-    public void AddNewVertex()
+    private void RoundVertexToHexGrid(Transform vertTransform)
     {
-        //Create and place board prefab
-        Transform newBoardVertex = Instantiate(boardVertexPrefab).transform;
-        Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        mousePos -= new Vector3(0, 0, 0.25f + mousePos.z);
-        newBoardVertex.position = mousePos;
-        newBoardVertex.parent = vertexParent;
+        vertTransform.position = GetRoundedHexPos(vertTransform.position);
+    }
 
-        BoardVertex newVertex = newBoardVertex.GetComponent<BoardVertex>();
+    private Vector3 GetRoundedHexPos(Vector3 pos)
+    {
+        int gridYPos = Mathf.RoundToInt(pos.y / hexHeight);
+        float yPos = gridYPos * hexHeight;
 
-        if (openIndices.Count > 0)
+        float xPos;
+        if (gridYPos % 2 == 0)
         {
-            //A vertex was removed, so fill that slot instead of expanding table (since recalulating all the indices would be ass lmao)
-            int newIndex = openIndices[0];
-            openIndices.RemoveAt(0);
-
-            newVertex.SetVertexId(newIndex);
-
-            boardVertices[newIndex] = newVertex;
+            //even y-pos, x pos should be 0,2,4,etc.
+            xPos = Mathf.RoundToInt(pos.x / hexWidth) * hexWidth;
         }
         else
         {
-            newVertex.SetVertexId(numVertices);
-            numVertices++;
-
-            boardVertices.Add(newVertex);
-
-            //Update edge tables to include new vertex
-            for (int i = 0; i < numVertices - 1; i++)
-            {
-                //Add a new element to each row (add a new column) to each table
-                boardEdgesTable[i].Add(null);
-                edgeConnectionsTable[i].Add(false);
-            }
-
-            //Add a new row to each table
-            boardEdgesTable.Add(new List<BoardEdge>(new BoardEdge[numVertices]));
-            edgeConnectionsTable.Add(new List<bool>(new bool[numVertices]));
+            //odd y-pos, x pos should be 1,3,5,etc.
+            xPos = (Mathf.RoundToInt((pos.x - 1) / hexWidth) * hexWidth) + 1;
         }
 
-        CalculateAdjacentVertices();
+        return new Vector3(xPos, yPos, -0.1f);
+    }
 
-        //Debug.Log("table after adding vertex:" + PrintEdgeConnectionsTable());
+    private void TryAddAdjacentEdges(BoardVertex centerVertex)
+    {
+        Vector3 centerVertPos = centerVertex.transform.position;
+
+        for(int angle = 0; angle < 360; angle += 60)
+        {
+            float angleRads = angle * Mathf.Deg2Rad;
+
+            float xOffset = Mathf.Cos(angleRads)*hexWidth;
+            float yOffset = Mathf.Sin(angleRads)*hexWidth;
+
+            Vector3 newVertPos = centerVertPos + new Vector3(xOffset, yOffset, 0);
+
+            RaycastHit2D hit = Physics2D.Raycast(newVertPos + new Vector3(0, 0, -0.2f), Vector3.forward);
+
+            BoardVertex newVert = hit.transform.gameObject.GetComponent<BoardVertex>();
+            if (newVert != null)
+            { 
+                Debug.Log("Adjacent vertex found at angle: "+angle);
+                AddNewEdge(centerVertex, newVert);
+            }
+        }
     }
 
     public void AddNewEdge(BoardVertex vertex1, BoardVertex vertex2)
@@ -452,7 +510,7 @@ public class GameBoardManager : MonoBehaviour
             {
                 if (vertexMode)
                 {
-                    vertexToMove = newVertex.gameObject.transform;
+                    //vertexToMove = newVertex.gameObject.transform;
                 }
                 else
                 {
@@ -492,17 +550,7 @@ public class GameBoardManager : MonoBehaviour
 
         if (gameBoardState == GameBoardStateEnum.mapEditor)
         {
-            if (newVertex != null)
-            {
-                if (vertexMode)
-                {
-                    vertexToMove = newVertex.gameObject.transform;
-                }
-                else
-                {
-                    firstVertexClicked = newVertex;
-                }
-            }
+
         }
         else
         {
@@ -519,7 +567,6 @@ public class GameBoardManager : MonoBehaviour
     {
         if(vertexMode)
         {
-            vertexToMove = null;
             return;
         }
 

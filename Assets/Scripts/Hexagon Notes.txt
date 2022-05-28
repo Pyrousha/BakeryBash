@@ -1,0 +1,1 @@
+pixels per unit = width of hexagon (side to side) divided by 2
