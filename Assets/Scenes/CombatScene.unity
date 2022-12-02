@@ -4835,15 +4835,9 @@ MonoBehaviour:
   board: {fileID: 640453773}
   editorStartPos: {x: 0, y: 0, z: -40}
   zoomOutPos: {x: 0, y: -15, z: -20}
-  cameraMoveSpeed: 0.5
+  cameraMoveSpeed: 15
   moveToVertexWhenClicked: 0
-  camHitboxLayer:
-    serializedVersion: 2
-    m_Bits: 256
-  topCamMove: {fileID: 296939263}
-  bottomCamMove: {fileID: 1535237874}
-  leftCamMove: {fileID: 195547484}
-  rightCamMove: {fileID: 884439108}
+  lockMouse: 0
 --- !u!4 &713808440
 Transform:
   m_ObjectHideFlags: 0
@@ -5118,13 +5112,7 @@ MonoBehaviour:
   zoomOutPos: {x: 0, y: 0, z: 0}
   cameraMoveSpeed: 0
   moveToVertexWhenClicked: 0
-  camHitboxLayer:
-    serializedVersion: 2
-    m_Bits: 0
-  topCamMove: {fileID: 0}
-  bottomCamMove: {fileID: 0}
-  leftCamMove: {fileID: 0}
-  rightCamMove: {fileID: 0}
+  lockMouse: 0
 --- !u!114 &771908119
 MonoBehaviour:
   m_ObjectHideFlags: 0

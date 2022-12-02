@@ -31,7 +31,7 @@ public class CameraController : MonoBehaviour
         spacePressed = false;
         keyPressed = false;
 
-        if(lockMouse)
+        if (lockMouse)
             Cursor.lockState = CursorLockMode.Confined;
     }
 
@@ -62,7 +62,7 @@ public class CameraController : MonoBehaviour
                 transform.position += new Vector3(-cameraMoveSpeed, 0, 0);
             }
         }
-        if (InputManager.Instance.IsInMouseMode())
+        //if (InputManager.Instance.IsInMouseMode())
         {
             Vector3 moveDir = new Vector3(0, 0, 0);
             Vector3 mousePos = Input.mousePosition;
